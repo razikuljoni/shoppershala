@@ -1,0 +1,34 @@
+---
+description: Shoppershala monorepo project rules for all AI assistants
+globs: 
+---
+# Shoppershala Project Rules
+
+## Before You Code
+1. Read `CLAUDE.md` for full project context
+2. Read this file for behavioral rules
+3. Check existing files before creating new ones
+4. Run `pnpm lint` and `pnpm test` before/after changes
+
+## Backend Rules
+- Use `#utils/`, `#models/`, `#services/`, `#controllers/`, `#routes/`, `#middlewares/`, `#config/` subpath imports (NEVER relative paths)
+- Keep layered architecture: routes → controllers → services → models
+- Add Zod validation schemas for all new POST/PATCH endpoints
+- Use Winston logger (`#utils/logger.js`), never console.log
+- All new endpoints go under `/api/v1/`
+
+## Frontend Rules
+- Use the `api.js` utility for all API calls (wraps axios with JWT interceptor)
+- Use Zustand for client-side state, TanStack Query for server state
+- Tailwind v4 for styling (utility classes + CSS, no separate CSS files for components)
+- Never import React unnecessarily (React 19 auto-jsx)
+
+## Git Rules
+- Conventional commits: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`
+- Run `pnpm format` before committing to fix formatting
+- Commit messages must pass commitlint conventional config
+
+## Testing Rules
+- Write tests for new backend services/models
+- Tests use Vitest, co-located with source files
+- Ensure MongoDB is running (`docker compose up -d`) before integration tests

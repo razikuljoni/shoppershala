@@ -1,0 +1,80 @@
+### Users API Tests
+### Base URL: http://localhost:3000/api/v1
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/users
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc3MzUzMjEsImV4cCI6MTc3NzgyMTcyMX0.JBlpaVC1zdTElRPMNnljeI2S2TYHV3bdXUtUWwN2W1A
+
+###
+### 1. Create a new user
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+    "name": "Alice Smith",
+    "username": "alicesmith",
+    "email": "alice@example.com",
+    "password": "password123"
+}
+
+###
+### 2. Get all users (default pagination)
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 3. Get all users with custom pagination
+GET {{baseUrl}}/?page=1&limit=5
+Authorization: Bearer {{token}}
+
+###
+### 4. Get user by ID
+# Replace with actual user ID from response
+GET {{baseUrl}}/65d1f85e8c9b4a1d2e3f4a04
+Authorization: Bearer {{token}}
+
+###
+### 5. Update user by ID
+PATCH {{baseUrl}}/65d1f85e8c9b4a1d2e3f4a04
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "firstName": "Alice",
+    "lastName": "Updated",
+    "email": "alice2.updated@example.com"
+}
+
+###
+### 6. Delete user by ID
+DELETE {{baseUrl}}/65d1f85e8c9b4a1d2e3f4a04
+Authorization: Bearer {{token}}
+
+###
+### 7. Create user - Missing email (should fail with 400)
+POST {{baseUrl}}/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Bob NoEmail",
+    "username": "bobnoemail",
+    "password": "password123"
+}
+
+###
+### 8. Create user - Short password (should fail with 400)
+POST {{baseUrl}}/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Bob Short",
+    "username": "bobshort",
+    "email": "bob@example.com",
+    "password": "123"
+}
+
+###
+### 9. Access without token (should fail with 401)
+GET {{baseUrl}}/

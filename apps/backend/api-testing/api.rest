@@ -1,0 +1,46 @@
+### CRUD Express API - Master Test Suite
+###
+### Instructions:
+### 1. Start the server: pnpm run dev
+### 2. Register a user first (see auth.rest)
+### 3. Login to get a JWT token
+### 4. Replace YOUR_JWT_TOKEN_HERE in each .rest file with your actual token
+### 5. Run requests in order as some depend on previous responses
+###
+### Test Files:
+### - auth.rest       : Authentication (register, login, whoami)
+### - users.rest      : User management (CRUD operations)
+### - categories.rest : Category management (CRUD operations)
+### - products.rest   : Product management (CRUD with category filter)
+### - orders.rest     : Order management (CRUD with status flow)
+###
+### Base URL
+@baseUrl = http://localhost:3000/api/v1
+
+###
+### Quick Health Check
+GET {{baseUrl}}/../
+
+###
+### Auth Flow Example
+### Step 1: Register
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "name": "Test User",
+    "username": "testuser",
+    "password": "testpass123"
+}
+
+###
+### Step 2: Login (extract token)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "joni",
+    "password": "admin123"
+}

@@ -1,0 +1,103 @@
+### Wishlist API Tests
+### Base URL: http://localhost:3000/api/v1
+### MongoDB Operators Used: $addToSet, $pull, $lookup, $in, $match, $unwind
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/wishlist
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc4MjE4MjQsImV4cCI6MTc3NzkwODIyNH0.2KNFjzWOhWQyJJ2vI_inN5wkvnIS0TEc6O_Yo_v7Qgw
+@productId1 = 69f61ad3174635f22f997e09
+@productId2 = 69f61ae6174635f22f997e0d
+
+###
+### 1. Get my wishlist (uses $lookup to populate products with category details)
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 2. Add product to wishlist (uses $addToSet to prevent duplicates)
+POST {{baseUrl}}/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId1}}"
+}
+
+###
+### 3. Add another product to wishlist
+POST {{baseUrl}}/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId2}}"
+}
+
+###
+### 4. Add same product again (should fail - already in wishlist)
+POST {{baseUrl}}/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId1}}"
+}
+
+###
+### 5. Check if product is in wishlist (uses $in operator)
+GET {{baseUrl}}/check/{{productId1}}
+Authorization: Bearer {{token}}
+
+###
+### 6. Check non-existent product in wishlist
+GET {{baseUrl}}/check/000000000000000000000000
+Authorization: Bearer {{token}}
+
+###
+### 7. Get wishlist with populated product details
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 8. Remove product from wishlist (uses $pull operator)
+DELETE {{baseUrl}}/remove/{{productId1}}
+Authorization: Bearer {{token}}
+
+###
+### 9. Check removed product (should return not in wishlist)
+GET {{baseUrl}}/check/{{productId1}}
+Authorization: Bearer {{token}}
+
+###
+### 10. Get updated wishlist
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 11. Remove non-existent product from wishlist (should fail with 404)
+DELETE {{baseUrl}}/remove/000000000000000000000000
+Authorization: Bearer {{token}}
+
+###
+### 12. Clear entire wishlist
+DELETE {{baseUrl}}/clear
+Authorization: Bearer {{token}}
+
+###
+### 13. Get empty wishlist
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 14. Access without token (should fail with 401)
+GET {{baseUrl}}/
+
+###
+### 15. Add product with invalid ID format (should fail with 400)
+POST {{baseUrl}}/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "invalid-id"
+}

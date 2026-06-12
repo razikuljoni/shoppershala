@@ -1,0 +1,96 @@
+### Categories API Tests
+### Base URL: http://localhost:3000/api/v1
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/categories
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc3MzUzMjEsImV4cCI6MTc3NzgyMTcyMX0.JBlpaVC1zdTElRPMNnljeI2S2TYHV3bdXUtUWwN2W1A
+
+###
+### 1. Create a category
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Electronics",
+    "description": "Electronic devices and accessories"
+}
+
+###
+### 2. Create another category
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Clothing",
+    "description": "Apparel and fashion items"
+}
+
+###
+### 3. Create third category
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Books",
+    "description": "Physical and digital books"
+}
+
+###
+### 4. Get all categories (default pagination)
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 5. Get all categories with custom pagination
+GET {{baseUrl}}/?page=1&limit=5
+Authorization: Bearer {{token}}
+
+###
+### 6. Get category by ID
+# Replace with actual category ID from response
+GET {{baseUrl}}/69f61967beebf764f2b1a011
+Authorization: Bearer {{token}}
+
+###
+### 7. Update category by ID
+PATCH {{baseUrl}}/69f61967beebf764f2b1a011
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Electronics Updated",
+    "description": "Updated electronic devices and accessories"
+}
+
+###
+### 8. Delete category by ID
+DELETE {{baseUrl}}/69f619d4beebf764f2b1a013
+Authorization: Bearer {{token}}
+
+###
+### 9. Create duplicate category (should fail with 409)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Electronics",
+    "description": "Duplicate test"
+}
+
+###
+### 10. Create category - Missing name (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "No name provided"
+}
+
+###
+### 11. Access without token (should fail with 401)
+GET {{baseUrl}}/

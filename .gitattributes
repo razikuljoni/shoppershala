@@ -1,0 +1,30 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# JS/JSX/TS/TSX
+*.js text
+*.jsx text
+*.mjs text
+*.cjs text
+
+# Markdown/JSON/YAML
+*.md text
+*.json text
+*.yaml text
+*.yml text
+
+# Config
+*.env.example text
+*.conf text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.ico binary
+*.svg text
+*.gif binary
+*.woff binary
+*.woff2 binary
+
+# Lock file — text but should not be normalized
+pnpm-lock.yaml -text

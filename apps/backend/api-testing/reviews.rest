@@ -1,0 +1,118 @@
+### Reviews API Tests
+### Base URL: http://localhost:3000/api/v1
+### MongoDB Operators Used: $lookup, $group, $avg, $unwind, $match, $sort, $skip, $limit
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/reviews
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc3MzUzMjEsImV4cCI6MTc3NzgyMTcyMX0.JBlpaVC1zdTElRPMNnljeI2S2TYHV3bdXUtUWwN2W1A
+@productId = 69f61ad8174635f22f997e0a
+
+###
+### 1. Create a review for a product
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId}}",
+    "rating": 5,
+    "comment": "Excellent product! Highly recommended."
+}
+
+###
+### 2. Create another review
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId}}",
+    "rating": 4,
+    "comment": "Good product, worth the price."
+}
+
+###
+### 3. Create review - Invalid rating (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId}}",
+    "rating": 6,
+    "comment": "Invalid rating"
+}
+
+###
+### 4. Create review - Missing rating (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "{{productId}}",
+    "comment": "No rating provided"
+}
+
+###
+### 5. Get all reviews (with pagination)
+GET {{baseUrl}}/?page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+### 6. Get reviews for a specific product (uses $lookup to join with users)
+GET {{baseUrl}}/product/{{productId}}?page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+### 7. Get my reviews (uses $lookup to join with products)
+GET {{baseUrl}}/my?page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+### 8. Get review by ID
+# Replace with actual review ID from response
+GET {{baseUrl}}/69f765610fee703252d81dad
+Authorization: Bearer {{token}}
+
+###
+### 9. Update review by ID
+PATCH {{baseUrl}}/69f765610fee703252d81dad
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "rating": 4,
+    "comment": "Updated: Absolutely love this product!"
+}
+
+###
+### 10. Update review - Invalid rating (should fail with 400)
+PATCH {{baseUrl}}/680f1a2b3c4d5e6f7a8b9c0
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "rating": 0
+}
+
+###
+### 11. Delete review by ID (returns updated average rating using $avg)
+DELETE {{baseUrl}}/680f1a2b3c4d5e6f7a8b9c0
+Authorization: Bearer {{token}}
+
+###
+### 12. Access without token (should fail with 401)
+GET {{baseUrl}}/
+
+###
+### 13. Create review for non-existent product (should fail with 404)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "productId": "000000000000000000000000",
+    "rating": 5,
+    "comment": "Testing non-existent product"
+}

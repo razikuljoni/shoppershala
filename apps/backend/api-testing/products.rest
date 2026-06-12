@@ -1,0 +1,132 @@
+### Products API Tests
+### Base URL: http://localhost:3000/api/v1
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/products
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc4MjE4MjQsImV4cCI6MTc3NzkwODIyNH0.2KNFjzWOhWQyJJ2vI_inN5wkvnIS0TEc6O_Yo_v7Qgw
+@categoryId = 69f61a26beebf764f2b1a014
+
+###
+### 1. Create a product
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Laptop Pro 15",
+    "description": "High-performance laptop with 15-inch display",
+    "price": 1299.99,
+    "stock": 50,
+    "categoryId": "{{categoryId}}"
+}
+
+###
+### 2. Create another product
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Wireless Mouse",
+    "description": "Ergonomic wireless mouse with USB receiver",
+    "price": 29.99,
+    "stock": 200,
+    "categoryId": "{{categoryId}}"
+}
+
+###
+### 3. Create third product
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Mechanical Keyboard",
+    "description": "RGB mechanical keyboard with Cherry MX switches",
+    "price": 149.99,
+    "stock": 75,
+    "categoryId": "{{categoryId}}"
+}
+
+###
+### 4. Get all products (default pagination)
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 5. Get all products with custom pagination
+GET {{baseUrl}}/?page=1&limit=2
+Authorization: Bearer {{token}}
+
+###
+### 6. Get products filtered by category
+GET {{baseUrl}}/?categoryId={{categoryId}}&page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+### 7. Get product by ID
+# Replace with actual product ID from response
+GET {{baseUrl}}/69f61ad3174635f22f997e09
+Authorization: Bearer {{token}}
+
+###
+### 8. Update product by ID
+PATCH {{baseUrl}}/69f61ad3174635f22f997e09
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Laptop Pro 15 Updated",
+    "price": 1199.99,
+    "stock": 45
+}
+
+###
+### 9. Delete product by ID
+DELETE {{baseUrl}}/69f61ada174635f22f997e0b
+Authorization: Bearer {{token}}
+
+###
+### 10. Create product - Missing categoryId (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Test Product",
+    "description": "Missing category",
+    "price": 99.99,
+    "stock": 10
+}
+
+###
+### 11. Create product - Negative price (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Bad Product",
+    "description": "Negative price",
+    "price": -10,
+    "stock": 5,
+    "categoryId": "{{categoryId}}"
+}
+
+###
+### 12. Create product - Negative stock (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Bad Product",
+    "description": "Negative stock",
+    "price": 10,
+    "stock": -5,
+    "categoryId": "{{categoryId}}"
+}
+
+###
+### 13. Access without token (should fail with 401)
+GET {{baseUrl}}/

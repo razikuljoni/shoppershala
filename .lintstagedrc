@@ -1,0 +1,5 @@
+{
+  "apps/backend/**/*.{js,jsx}": ["pnpm --filter ./apps/backend exec eslint --fix", "prettier --write"],
+  "apps/frontend/**/*.{js,jsx}": ["pnpm --filter frontend exec eslint --fix", "prettier --write"],
+  "*.{json,yaml,yml,md,css,html}": ["prettier --write"]
+}

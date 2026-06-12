@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build / Dist
+dist/
+build/
+apps/frontend/dist/
+
+# Environment (keep .env.example, ignore actual .env files)
+.env
+.env.*
+apps/backend/.env
+apps/backend/.env.*
+!.env.example
+!.env.example
+
+# IDE / Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+**.log
+apps/backend/logs/
+
+# Temp / Cache
+.eslintcache
+.prettiercache
+*.tsbuildinfo
+.vitest/
+
+# Coverage
+coverage/
+lcov.info
+
+# Testing
+.vitest/
+
+# pnpm store (NOT the lockfile — lockfile should be committed)
+.pnpm-store/
+
+# Husky
+.husky/_/

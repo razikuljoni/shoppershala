@@ -1,0 +1,18 @@
+---
+description: Linting and formatting rules
+globs: 
+---
+# Linting & Formatting
+
+## Commands
+```bash
+pnpm lint          # Run ESLint on all apps
+pnpm lint:fix      # Auto-fix ESLint issues
+pnpm format        # Format with Prettier
+pnpm format:check  # Check formatting
+```
+
+## Conventions
+- ESLint flat config: `apps/backend/eslint.config.js`, `apps/frontend/eslint.config.js`
+- Prettier config: `.prettierrc` (singleQuote, trailingComma all, printWidth 100)
+- Run `pnpm lint:fix && pnpm format` when blocked by formatting issues

@@ -1,0 +1,62 @@
+### Analytics API Tests
+### Base URL: http://localhost:3000/api/v1
+### MongoDB Operators Used: $group, $sum, $avg, $multiply, $unwind, $lookup, $match, $sort, $limit, $month, $first, $max
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/analytics
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc4MjE4MjQsImV4cCI6MTc3NzkwODIyNH0.2KNFjzWOhWQyJJ2vI_inN5wkvnIS0TEc6O_Yo_v7Qgw
+@userId = 69945d874da99ea0d92d3aba
+
+###
+### 1. Get dashboard stats (combines multiple aggregations)
+GET {{baseUrl}}/dashboard
+Authorization: Bearer {{token}}
+
+###
+### 2. Get sales analytics (uses $group with $sum and $avg)
+GET {{baseUrl}}/sales
+Authorization: Bearer {{token}}
+
+###
+### 3. Get sales analytics with date range
+GET {{baseUrl}}/sales?startDate=2026-01-01&endDate=2026-12-31
+Authorization: Bearer {{token}}
+
+###
+### 4. Get top-selling products (uses $unwind, $group, $multiply, $lookup)
+GET {{baseUrl}}/top-products?limit=5
+Authorization: Bearer {{token}}
+
+###
+### 5. Get category sales report (uses multiple $lookup joins)
+GET {{baseUrl}}/category-sales
+Authorization: Bearer {{token}}
+
+###
+### 6. Get user order statistics (uses $group with $sum, $avg, $max)
+GET {{baseUrl}}/user-stats
+Authorization: Bearer {{token}}
+
+###
+### 7. Get order status distribution (uses $group with $sum)
+GET {{baseUrl}}/order-status
+Authorization: Bearer {{token}}
+
+###
+### 8. Get monthly sales trend (uses $month operator)
+GET {{baseUrl}}/monthly-trend?year=2026
+Authorization: Bearer {{token}}
+
+###
+### 9. Get another user's stats (admin feature)
+GET {{baseUrl}}/user-stats/{{userId}}
+Authorization: Bearer {{token}}
+
+###
+### 10. Access without token (should fail with 401)
+GET {{baseUrl}}/dashboard
+
+###
+### 11. Get sales analytics with invalid date (should handle gracefully)
+GET {{baseUrl}}/sales?startDate=invalid-date
+Authorization: Bearer {{token}}

@@ -1,0 +1,7 @@
+{
+  "watch": ["server.js", "app.js", "db.js", "src/"],
+  "ext": "js",
+  "delay": 500,
+  "killSignal": "SIGTERM",
+  "exitcrash": true
+}

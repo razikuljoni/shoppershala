@@ -1,0 +1,18 @@
+---
+description: Testing rules and patterns for the project
+globs: 
+---
+# Testing Rules
+
+## Backend Testing
+- Vitest is configured in `apps/backend/vitest.config.js`
+- Test files: `*.test.js` co-located with source files
+- MongoDB must be running for integration tests
+- Mock external services where possible
+
+## Commands
+```bash
+pnpm test                      # Run all tests
+pnpm --filter ./apps/backend test  # Run backend tests only
+pnpm --filter frontend test        # Run frontend tests only
+```

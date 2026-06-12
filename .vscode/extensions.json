@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "humao.rest-client",
+    "bradlc.vscode-tailwindcss",
+    "rangav.vscode-thunder-client",
+    "ms-azuretools.vscode-docker",
+    "mongodb.mongodb-vscode",
+    "vitest.explorer",
+    "bierner.github-markdown-preview",
+    "eamodio.gitlens"
+  ]
+}

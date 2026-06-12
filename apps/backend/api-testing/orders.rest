@@ -1,0 +1,154 @@
+### Orders API Tests
+### Base URL: http://localhost:3000/api/v1
+### MongoDB Operators Used: $match, $group, $sum, $avg, $month
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/orders
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTk0NWQ4NzRkYTk5ZWEwZDkyZDNhYmEiLCJ1c2VybmFtZSI6ImpvbmkiLCJpYXQiOjE3Nzc3MzUzMjEsImV4cCI6MTc3NzgyMTcyMX0.JBlpaVC1zdTElRPMNnljeI2S2TYHV3bdXUtUWwN2W1A
+@productId = 69f61ad3174635f22f997e09
+
+###
+### 1. Create an order (dynamic - fetches real product price & details)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "items": [
+        {
+            "productId": "{{productId}}",
+            "quantity": 2
+        }
+    ],
+    "shippingAddress": {
+        "street": "123 Main Street",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+    }
+}
+
+###
+### 2. Create another order with multiple items
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "items": [
+        {
+            "productId": "{{productId}}",
+            "quantity": 1
+        }
+    ],
+    "shippingAddress": {
+        "street": "456 Oak Avenue",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001",
+        "country": "USA"
+    }
+}
+
+###
+### 3. Get all orders (default pagination)
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 4. Get all orders with custom pagination
+GET {{baseUrl}}/?page=1&limit=1
+Authorization: Bearer {{token}}
+
+###
+### 5. Get orders filtered by status
+GET {{baseUrl}}/?status=pending&page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+### 6. Get my orders (current user)
+GET {{baseUrl}}/my
+Authorization: Bearer {{token}}
+
+###
+### 7. Get my orders with pagination
+GET {{baseUrl}}/my?page=1&limit=5
+Authorization: Bearer {{token}}
+
+###
+### 8. Get order by ID
+# Replace ORDER_ID_HERE with actual order ID from response
+GET {{baseUrl}}/ORDER_ID_HERE
+Authorization: Bearer {{token}}
+
+###
+### 9. Update order status
+PATCH {{baseUrl}}/ORDER_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "status": "confirmed"
+}
+
+###
+### 10. Update order shipping address
+PATCH {{baseUrl}}/ORDER_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "shippingAddress": {
+        "street": "789 Updated Blvd",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601",
+        "country": "USA"
+    }
+}
+
+###
+### 11. Cancel an order
+PATCH {{baseUrl}}/ORDER_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "status": "cancelled"
+}
+
+###
+### 12. Delete order by ID
+DELETE {{baseUrl}}/ORDER_ID_HERE
+Authorization: Bearer {{token}}
+
+###
+### 13. Create order - Missing items (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "shippingAddress": {
+        "street": "123 Main St",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "USA"
+    }
+}
+
+###
+### 14. Create order - Invalid status update (should fail with 400)
+PATCH {{baseUrl}}/ORDER_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "status": "invalid_status"
+}
+
+###
+### 15. Access without token (should fail with 401)
+GET {{baseUrl}}/
