@@ -16,6 +16,7 @@
     "lint:fix": "pnpm --recursive run lint:fix",
     "format": "prettier --write \"**/*.{js,jsx,json,yaml,yml,md,css,html}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,json,yaml,yml,md,css,html}\"",
+    "test": "pnpm --recursive run test",
     "prepare": "husky"
   },
   "packageManager": "pnpm@10.29.3",
