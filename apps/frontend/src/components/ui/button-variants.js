@@ -1,0 +1,34 @@
+import { cva } from 'class-variance-authority';
+
+export const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-sm)] text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default:
+          'bg-[var(--color-primary)] text-white shadow-sm hover:bg-[var(--color-primary-hover)] hover:shadow-[0_0_24px_rgba(99,102,241,0.3)]',
+        destructive:
+          'bg-[rgba(239,68,68,0.1)] text-[#f87171] border border-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.2)]',
+        outline:
+          'border border-[var(--color-border)] bg-transparent text-[var(--color-muted-foreground)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--color-foreground)] hover:border-[var(--color-border-hover)]',
+        secondary:
+          'bg-[var(--color-secondary)] text-[var(--color-foreground)] hover:bg-[rgba(18,25,41,1)]',
+        ghost:
+          'bg-transparent text-[var(--color-muted-foreground)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--color-foreground)]',
+        link: 'text-[var(--color-primary)] underline-offset-4 hover:underline',
+        success:
+          'bg-[rgba(16,185,129,0.12)] text-[#34d399] border border-[rgba(16,185,129,0.2)] hover:bg-[rgba(16,185,129,0.2)]',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-8 rounded-md px-3 text-xs',
+        lg: 'h-12 rounded-[var(--radius)] px-6 text-base',
+        icon: 'h-9 w-9',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  },
+);

@@ -5,11 +5,11 @@ import { Label } from '@/components/ui/label';
 import { useLogin, useRegister } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Eye, EyeOff, Loader2, Store } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-export default function Auth() {
+export default function Auth({ onLogin: onLoginProp }) {
   const [mode, setMode] = useState('login');
   const [showPass, setShowPass] = useState(false);
   const login = useAuthStore((s) => s.login);
@@ -32,13 +32,9 @@ export default function Auth() {
             password: value.password,
           });
           localStorage.setItem('token', res.data.token);
-          await login({
-            id: res.data.user.id,
-            username: res.data.user.username,
-            role: res.data.user.role,
-            name: res.data.user.name || res.data.user.username,
-            balance: 0,
-          });
+          const userData = { ...res.data.user };
+          await login(userData);
+          onLoginProp?.(userData);
         } else {
           if (!value.name.trim()) return;
           const res = await registerMutation.mutateAsync({
@@ -48,13 +44,15 @@ export default function Auth() {
             role: value.role,
           });
           localStorage.setItem('token', res.data.token);
-          await login({
+          const regUser = {
             id: res.data.user.id,
             username: res.data.user.username,
             role: res.data.user.role,
             name: res.data.user.name || res.data.user.username,
             balance: 0,
-          });
+          };
+          await login(regUser);
+          onLoginProp?.(regUser);
         }
       } catch (err) {
         console.log('error', err);
@@ -79,15 +77,15 @@ export default function Auth() {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-[rgba(139,92,246,0.05)] blur-3xl" />
       </div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-[420px] relative z-10"
+        className="w-full max-w-105 relative z-10"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[rgba(99,102,241,0.2)] border border-[rgba(99,102,241,0.35)] mb-4 shadow-[0_0_24px_rgba(99,102,241,0.25)]">
-            <Store size={24} className="text-[var(--color-primary)]" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-glow border border-border-hover mb-4 shadow-[0_0_24px_rgba(99,102,241,0.25)]">
+            <Store size={24} className="text-(--color-primary)" />
           </div>
           <h1
             className="gradient-text text-3xl font-bold mb-1"
@@ -95,7 +93,7 @@ export default function Auth() {
           >
             Shoppershala
           </h1>
-          <p className="text-sm text-[var(--color-muted-foreground)]">
+          <p className="text-sm text-(--color-muted-foreground)">
             {mode === 'login'
               ? 'Welcome back. Sign in to continue.'
               : 'Create your account to get started.'}
@@ -103,14 +101,15 @@ export default function Auth() {
         </div>
 
         <Card className="glass-heavy border-[rgba(255,255,255,0.08)]">
-          <div className="flex border-b border-[var(--color-border)]">
+          <div className="flex border-b border-border">
             {['login', 'register'].map((m) => (
               <button
                 key={m}
+                type="button"
                 className={`flex-1 py-3.5 text-sm font-semibold capitalize transition-all duration-200 ${
                   mode === m
-                    ? 'text-[var(--color-foreground)] border-b-2 border-[var(--color-primary)]'
-                    : 'text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]'
+                    ? 'text-(--color-foreground) border-b-2 border-(--color-primary)'
+                    : 'text-(--color-muted-foreground) hover:text-(--color-foreground)'
                 }`}
                 onClick={() => switchMode(m)}
               >
@@ -121,7 +120,7 @@ export default function Auth() {
 
           <CardContent className="p-6">
             <AnimatePresence mode="wait">
-              <motion.form
+              <m.form
                 key={mode}
                 initial={{ opacity: 0, x: mode === 'login' ? -10 : 10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -135,9 +134,8 @@ export default function Auth() {
                 className="space-y-4"
               >
                 {mode === 'register' && (
-                  <form.Field
-                    name="name"
-                    children={(field) => (
+                  <form.Field name="name">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="name">Full Name</Label>
                         <Input
@@ -151,12 +149,11 @@ export default function Auth() {
                         />
                       </div>
                     )}
-                  />
+                  </form.Field>
                 )}
 
-                <form.Field
-                  name="username"
-                  children={(field) => (
+                <form.Field name="username">
+                  {(field) => (
                     <div className="space-y-1.5">
                       <Label htmlFor="username">Username</Label>
                       <Input
@@ -171,11 +168,10 @@ export default function Auth() {
                       />
                     </div>
                   )}
-                />
+                </form.Field>
 
-                <form.Field
-                  name="password"
-                  children={(field) => (
+                <form.Field name="password">
+                  {(field) => (
                     <div className="space-y-1.5">
                       <Label htmlFor="password">Password</Label>
                       <div className="relative">
@@ -192,7 +188,7 @@ export default function Auth() {
                         />
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors"
                           onClick={() => setShowPass((v) => !v)}
                         >
                           {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -200,12 +196,11 @@ export default function Auth() {
                       </div>
                     </div>
                   )}
-                />
+                </form.Field>
 
                 {mode === 'register' && (
-                  <form.Field
-                    name="email"
-                    children={(field) => (
+                  <form.Field name="email">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -219,12 +214,11 @@ export default function Auth() {
                         />
                       </div>
                     )}
-                  />
+                  </form.Field>
                 )}
                 {mode === 'register' && (
-                  <form.Field
-                    name="phone"
-                    children={(field) => (
+                  <form.Field name="phone">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="phone">Phone Number</Label>
                         <Input
@@ -238,13 +232,12 @@ export default function Auth() {
                         />
                       </div>
                     )}
-                  />
+                  </form.Field>
                 )}
 
                 {mode === 'register' && (
-                  <form.Field
-                    name="role"
-                    children={(field) => (
+                  <form.Field name="role">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="role">Account Role</Label>
                         <select
@@ -259,7 +252,7 @@ export default function Auth() {
                         </select>
                       </div>
                     )}
-                  />
+                  </form.Field>
                 )}
 
                 <Button type="submit" className="w-full mt-2" disabled={loading}>
@@ -273,11 +266,11 @@ export default function Auth() {
                     'Create Account'
                   )}
                 </Button>
-              </motion.form>
+              </m.form>
             </AnimatePresence>
 
             <div className="mt-5 p-3 rounded-xl bg-[rgba(99,102,241,0.07)] border border-[rgba(99,102,241,0.15)]">
-              <p className="text-[11px] font-semibold text-[var(--color-muted-foreground)] uppercase tracking-wider mb-2">
+              <p className="text-[11px] font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2">
                 Demo Credentials
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -289,26 +282,24 @@ export default function Auth() {
                   <button
                     key={role}
                     type="button"
-                    className="text-left p-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] transition-colors"
+                    className="text-left p-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-border hover:border-border-hover transition-colors"
                     onClick={() => {
                       setMode('login');
                       form.setFieldValue('username', user);
                       form.setFieldValue('password', pass);
                     }}
                   >
-                    <p className="text-[10px] font-bold text-[var(--color-primary)] capitalize mb-0.5">
+                    <p className="text-[10px] font-bold text-(--color-primary) capitalize mb-0.5">
                       {role}
                     </p>
-                    <p className="text-[10px] text-[var(--color-muted-foreground)] font-mono">
-                      {user}
-                    </p>
+                    <p className="text-[10px] text-(--color-muted-foreground) font-mono">{user}</p>
                   </button>
                 ))}
               </div>
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

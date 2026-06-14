@@ -8,10 +8,91 @@ import { useCreateOrder, useUpdateUser } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import useCartStore from '@/stores/cartStore';
 import { useForm } from '@tanstack/react-form';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, CheckCircle, CreditCard, Loader2, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+function OrderSummary({ items, subtotal, balance, canAfford, loading }) {
+  return (
+    <Card>
+      <CardContent className="p-5 space-y-4">
+        <h3
+          className="font-bold text-(--color-foreground)"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Order Summary
+        </h3>
+
+        <div className="space-y-2">
+          {items.map(({ product, quantity }) => (
+            <div
+              key={product._id}
+              className="flex justify-between text-sm text-(--color-muted-foreground)"
+            >
+              <span className="truncate mr-2">
+                {product.name} ×{quantity}
+              </span>
+              <span className="shrink-0 font-medium text-(--color-foreground)">
+                ${(product.price * quantity).toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <Separator />
+
+        <div className="flex justify-between font-bold text-(--color-foreground)">
+          <span>Total</span>
+          <span>${subtotal.toFixed(2)}</span>
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between p-3 rounded-xl bg-[rgba(99,102,241,0.08)] border border-[rgba(99,102,241,0.15)]">
+          <div className="flex items-center gap-2">
+            <Wallet size={15} className="text-(--color-primary)" />
+            <span className="text-sm font-medium text-(--color-muted-foreground)">
+              Wallet Balance
+            </span>
+          </div>
+          <span className={`text-sm font-bold ${canAfford ? 'text-success' : 'text-destructive'}`}>
+            ${balance.toFixed(2)}
+          </span>
+        </div>
+
+        {!canAfford && (
+          <p className="text-xs text-destructive">
+            You need ${(subtotal - balance).toFixed(2)} more. Top up in your Profile.
+          </p>
+        )}
+
+        <Badge
+          variant={canAfford ? 'success' : 'destructive'}
+          className="w-full justify-center py-1.5"
+        >
+          Payment via Wallet
+        </Badge>
+
+        <Button
+          type="submit"
+          form="checkout-form"
+          className="w-full"
+          size="lg"
+          disabled={loading || !canAfford || items.length === 0}
+        >
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" /> Processing…
+            </>
+          ) : (
+            `Place Order — $${subtotal.toFixed(2)}`
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -81,22 +162,22 @@ export default function Checkout() {
 
   if (success) {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center justify-center py-24 text-center gap-6 animate-fade-in"
       >
         <div className="w-20 h-20 rounded-full bg-[rgba(16,185,129,0.15)] border-2 border-[rgba(16,185,129,0.4)] flex items-center justify-center">
-          <CheckCircle size={36} className="text-[var(--color-success)]" />
+          <CheckCircle size={36} className="text-success" />
         </div>
         <div>
           <h2
-            className="text-2xl font-bold text-[var(--color-foreground)]"
+            className="text-2xl font-bold text-(--color-foreground)"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Order Placed!
           </h2>
-          <p className="text-sm text-[var(--color-muted-foreground)] mt-2">
+          <p className="text-sm text-(--color-muted-foreground) mt-2">
             Your order for <strong>${subtotal.toFixed(2)}</strong> has been confirmed.
             <br />
             New wallet balance: <strong>${(balance - subtotal).toFixed(2)}</strong>
@@ -108,21 +189,22 @@ export default function Checkout() {
             Continue Shopping
           </Button>
         </div>
-      </motion.div>
+      </m.div>
     );
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
       <button
+        type="button"
         onClick={() => navigate('/cart')}
-        className="inline-flex items-center gap-2 text-sm text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors"
       >
         <ArrowLeft size={15} /> Back to Cart
       </button>
 
       <h2
-        className="text-2xl font-bold text-[var(--color-foreground)]"
+        className="text-2xl font-bold text-(--color-foreground)"
         style={{ fontFamily: 'var(--font-display)' }}
       >
         Checkout
@@ -133,7 +215,7 @@ export default function Checkout() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCard size={18} className="text-[var(--color-primary)]" />
+                <CreditCard size={18} className="text-(--color-primary)" />
                 Shipping Details
               </CardTitle>
             </CardHeader>
@@ -147,9 +229,8 @@ export default function Checkout() {
                 }}
                 className="space-y-4"
               >
-                <form.Field
-                  name="name"
-                  children={(field) => (
+                <form.Field name="name">
+                  {(field) => (
                     <div className="space-y-1.5">
                       <Label htmlFor="name">Full Name</Label>
                       <Input
@@ -162,10 +243,9 @@ export default function Checkout() {
                       />
                     </div>
                   )}
-                />
-                <form.Field
-                  name="phone"
-                  children={(field) => (
+                </form.Field>
+                <form.Field name="phone">
+                  {(field) => (
                     <div className="space-y-1.5">
                       <Label htmlFor="phone">Phone Number</Label>
                       <Input
@@ -178,11 +258,10 @@ export default function Checkout() {
                       />
                     </div>
                   )}
-                />
+                </form.Field>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <form.Field
-                    name="street"
-                    children={(field) => (
+                  <form.Field name="street">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="street">Street Address</Label>
                         <Input
@@ -195,10 +274,9 @@ export default function Checkout() {
                         />
                       </div>
                     )}
-                  />
-                  <form.Field
-                    name="city"
-                    children={(field) => (
+                  </form.Field>
+                  <form.Field name="city">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="city">City</Label>
                         <Input
@@ -211,10 +289,9 @@ export default function Checkout() {
                         />
                       </div>
                     )}
-                  />
-                  <form.Field
-                    name="state"
-                    children={(field) => (
+                  </form.Field>
+                  <form.Field name="state">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="state">State</Label>
                         <Input
@@ -227,10 +304,9 @@ export default function Checkout() {
                         />
                       </div>
                     )}
-                  />
-                  <form.Field
-                    name="zipCode"
-                    children={(field) => (
+                  </form.Field>
+                  <form.Field name="zipCode">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="zipCode">Zip Code</Label>
                         <Input
@@ -243,10 +319,9 @@ export default function Checkout() {
                         />
                       </div>
                     )}
-                  />
-                  <form.Field
-                    name="country"
-                    children={(field) => (
+                  </form.Field>
+                  <form.Field name="country">
+                    {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="country">Country</Label>
                         <Input
@@ -259,7 +334,7 @@ export default function Checkout() {
                         />
                       </div>
                     )}
-                  />
+                  </form.Field>
                 </div>
               </form>
             </CardContent>
@@ -267,86 +342,13 @@ export default function Checkout() {
         </div>
 
         <div className="space-y-4">
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h3
-                className="font-bold text-[var(--color-foreground)]"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                Order Summary
-              </h3>
-
-              <div className="space-y-2">
-                {items.map(({ product, quantity }) => (
-                  <div
-                    key={product._id}
-                    className="flex justify-between text-sm text-[var(--color-muted-foreground)]"
-                  >
-                    <span className="truncate mr-2">
-                      {product.name} ×{quantity}
-                    </span>
-                    <span className="shrink-0 font-medium text-[var(--color-foreground)]">
-                      ${(product.price * quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <Separator />
-
-              <div className="flex justify-between font-bold text-[var(--color-foreground)]">
-                <span>Total</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[rgba(99,102,241,0.08)] border border-[rgba(99,102,241,0.15)]">
-                <div className="flex items-center gap-2">
-                  <Wallet size={15} className="text-[var(--color-primary)]" />
-                  <span className="text-sm font-medium text-[var(--color-muted-foreground)]">
-                    Wallet Balance
-                  </span>
-                </div>
-                <span
-                  className={`text-sm font-bold ${
-                    canAfford ? 'text-[var(--color-success)]' : 'text-[var(--color-destructive)]'
-                  }`}
-                >
-                  ${balance.toFixed(2)}
-                </span>
-              </div>
-
-              {!canAfford && (
-                <p className="text-xs text-[var(--color-destructive)]">
-                  You need ${(subtotal - balance).toFixed(2)} more. Top up in your Profile.
-                </p>
-              )}
-
-              <Badge
-                variant={canAfford ? 'success' : 'destructive'}
-                className="w-full justify-center py-1.5"
-              >
-                Payment via Wallet
-              </Badge>
-
-              <Button
-                type="submit"
-                form="checkout-form"
-                className="w-full"
-                size="lg"
-                disabled={loading || !canAfford || items.length === 0}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" /> Processing…
-                  </>
-                ) : (
-                  `Place Order — $${subtotal.toFixed(2)}`
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+          <OrderSummary
+            items={items}
+            subtotal={subtotal}
+            balance={balance}
+            canAfford={canAfford}
+            loading={loading}
+          />
         </div>
       </div>
     </div>

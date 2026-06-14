@@ -50,8 +50,10 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
     <>
       {/* Overlay for mobile */}
       {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden cursor-default"
           onClick={onClose}
         />
       )}
@@ -60,7 +62,7 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
       <aside
         className={cn(
           'fixed top-0 left-0 z-50 flex h-screen flex-col',
-          'w-[260px] bg-[var(--color-sidebar)] border-r border-[var(--color-sidebar-border)]',
+          'w-65 bg-sidebar border-r border-sidebar-border',
           'transition-transform duration-300 ease-in-out',
           // Desktop: always visible
           'lg:translate-x-0',
@@ -69,25 +71,23 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
         )}
       >
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-5 border-b border-[var(--color-sidebar-border)] h-[68px] shrink-0">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[rgba(99,102,241,0.2)] border border-[rgba(99,102,241,0.3)]">
-            <Store size={18} className="text-[var(--color-primary)]" />
+        <div className="flex items-center gap-3 px-5 border-b border-sidebar-border h-17 shrink-0">
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-glow border border-[rgba(99,102,241,0.3)]">
+            <Store size={18} className="text-(--color-primary)" />
           </div>
           <div>
             <span
-              className="font-[var(--font-display)] font-bold text-base text-[var(--color-foreground)] gradient-text"
+              className="font-(--font-display) text-base text-(--color-foreground) gradient-text"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Antigravity
-            </span>
-            <span className="text-[var(--color-muted-foreground)] text-base font-semibold ml-1">
-              Market
+              Shoppershala
             </span>
           </div>
 
           {/* Mobile close button */}
           <button
-            className="ml-auto lg:hidden p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[rgba(255,255,255,0.06)] transition-colors"
+            type="button"
+            className="ml-auto lg:hidden p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-border transition-colors"
             onClick={onClose}
           >
             <X size={16} />
@@ -107,7 +107,7 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
               <Icon size={17} className="shrink-0" />
               <span className="flex-1 truncate">{label}</span>
               {badge != null && (
-                <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[var(--color-primary)] text-white text-[10px] font-bold">
+                <span className="ml-auto flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-(--color-primary) text-white text-[10px] font-bold">
                   {badge}
                 </span>
               )}
@@ -116,7 +116,7 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
         </nav>
 
         {/* Footer: User Info or Sign In */}
-        <div className="shrink-0 border-t border-[var(--color-sidebar-border)] p-4 space-y-3">
+        <div className="shrink-0 border-t border-sidebar-border p-4 space-y-3">
           {currentUser ? (
             <>
               <div className="flex items-center gap-3">
@@ -126,10 +126,10 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-[var(--color-foreground)] truncate">
+                  <p className="text-sm font-bold text-(--color-foreground) truncate">
                     {currentUser.name || currentUser.username}
                   </p>
-                  <p className="text-[10px] text-[var(--color-muted-foreground)] uppercase tracking-wider font-semibold">
+                  <p className="text-[10px] text-(--color-muted-foreground) uppercase tracking-wider font-semibold">
                     {currentUser.role}
                   </p>
                 </div>

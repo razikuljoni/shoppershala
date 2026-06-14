@@ -1,12 +1,9 @@
-import useAuthStore from '@/stores/authStore';
 import useCartStore from '@/stores/cartStore';
 import useUIStore from '@/stores/uiStore';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
-export default function AppShell({ children }) {
-  const currentUser = useAuthStore((s) => s.currentUser);
-  const logout = useAuthStore((s) => s.logout);
+export default function AppShell({ children, currentUser, onLogout }) {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const cartItemCount = useCartStore((s) =>
@@ -14,16 +11,16 @@ export default function AppShell({ children }) {
   );
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-background)]">
+    <div className="flex min-h-screen bg-background">
       <Sidebar
         currentUser={currentUser}
         cartItemCount={cartItemCount}
-        onLogout={logout}
+        onLogout={onLogout}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-[260px]">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-65">
         <Navbar currentUser={currentUser} onMenuToggle={() => setSidebarOpen(true)} />
 
         <main className="flex-1 overflow-y-auto">

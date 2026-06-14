@@ -22,7 +22,6 @@ import {
 } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
-import { toast } from 'sonner';
 import {
   BarChart3,
   DollarSign,
@@ -33,12 +32,12 @@ import {
   Plus,
   Save,
   ShoppingCart,
-  TrendingUp,
   Trash2,
+  TrendingUp,
   Users2,
   X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const MONTH_NAMES = [
   'Jan',
@@ -72,11 +71,11 @@ function StatCard({
           <Icon size={20} className={iconColor} />
         </div>
         <div>
-          <p className="text-xs text-[var(--color-muted-foreground)] uppercase tracking-wider font-semibold mb-0.5">
+          <p className="text-xs text-(--color-muted-foreground) uppercase tracking-wider font-semibold mb-0.5">
             {label}
           </p>
           <p
-            className="text-2xl font-bold text-[var(--color-foreground)]"
+            className="text-2xl font-bold text-(--color-foreground)"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {value}
@@ -93,7 +92,7 @@ function StatCard({
 function TrendChart({ monthlySalesTrend }) {
   if (!monthlySalesTrend?.length) {
     return (
-      <p className="text-sm text-[var(--color-muted-foreground)] text-center py-8">
+      <p className="text-sm text-(--color-muted-foreground) text-center py-8">
         No sales trend data yet.
       </p>
     );
@@ -113,7 +112,7 @@ function TrendChart({ monthlySalesTrend }) {
     <div className="w-full overflow-x-auto">
       <svg
         viewBox={`0 0 ${W} ${H + 40}`}
-        className="w-full min-w-[480px]"
+        className="w-full min-w-120"
         style={{ fontFamily: 'var(--font-sans)' }}
       >
         <defs>
@@ -209,9 +208,8 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
       }}
       className="space-y-3"
     >
-      <form.Field
-        name="name"
-        children={(field) => (
+      <form.Field name="name">
+        {(field) => (
           <div className="space-y-1.5">
             <Label>Product Name</Label>
             <Input
@@ -222,25 +220,24 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
             />
           </div>
         )}
-      />
-      <form.Field
-        name="description"
-        children={(field) => (
+      </form.Field>
+      <form.Field name="description">
+        {(field) => (
           <div className="space-y-1.5">
             <Label>Description</Label>
             <textarea
-              className="input-base min-h-[80px] resize-y"
+              aria-label="Product description"
+              className="input-base min-h-20 resize-y"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               placeholder="Short description…"
             />
           </div>
         )}
-      />
+      </form.Field>
       <div className="grid grid-cols-2 gap-3">
-        <form.Field
-          name="price"
-          children={(field) => (
+        <form.Field name="price">
+          {(field) => (
             <div className="space-y-1.5">
               <Label>Price ($)</Label>
               <Input
@@ -254,10 +251,9 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
               />
             </div>
           )}
-        />
-        <form.Field
-          name="stock"
-          children={(field) => (
+        </form.Field>
+        <form.Field name="stock">
+          {(field) => (
             <div className="space-y-1.5">
               <Label>Stock Qty</Label>
               <Input
@@ -270,11 +266,10 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
               />
             </div>
           )}
-        />
+        </form.Field>
       </div>
-      <form.Field
-        name="categoryId"
-        children={(field) => (
+      <form.Field name="categoryId">
+        {(field) => (
           <div className="space-y-1.5">
             <Label>Category</Label>
             <select
@@ -292,10 +287,9 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
             </select>
           </div>
         )}
-      />
-      <form.Field
-        name="imageUrl"
-        children={(field) => (
+      </form.Field>
+      <form.Field name="imageUrl">
+        {(field) => (
           <div className="space-y-1.5">
             <Label>Image URL</Label>
             <Input
@@ -306,14 +300,14 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
             />
           </div>
         )}
-      />
+      </form.Field>
       <div className="flex gap-2 pt-1">
         {isEdit && (
           <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onCancel}>
             <X size={14} /> Cancel
           </Button>
         )}
-        <Button type="submit" size="sm" className={isEdit ? 'flex-[2]' : 'w-full'}>
+        <Button type="submit" size="sm" className={isEdit ? 'flex-2' : 'w-full'}>
           {isEdit ? (
             <>
               <Save size={14} /> Save
@@ -326,6 +320,496 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
         </Button>
       </div>
     </form>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Analytics Tab Panel
+   --------------------------------------------------------------- */
+function AnalyticsPanel({ analytics, analyticsLoading }) {
+  return (
+    <TabsContent value="analytics" className="space-y-6">
+      {analyticsLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-5">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <StatCard
+              icon={DollarSign}
+              label="Total Revenue"
+              value={`$${(analytics?.salesAnalytics?.totalRevenue || 0).toFixed(2)}`}
+            />
+            <StatCard
+              icon={ShoppingCart}
+              label="Total Orders"
+              value={analytics?.salesAnalytics?.totalOrders || 0}
+              iconColor="text-[var(--color-success)]"
+              iconBg="bg-[rgba(16,185,129,0.15)]"
+            />
+            <StatCard
+              icon={Percent}
+              label="Avg Order Value"
+              value={`$${(analytics?.salesAnalytics?.averageOrderValue || 0).toFixed(2)}`}
+              iconColor="text-[var(--color-warning)]"
+              iconBg="bg-[rgba(245,158,11,0.15)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <TrendingUp size={15} className="text-(--color-primary)" />
+                  Monthly Revenue
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TrendChart monthlySalesTrend={analytics?.monthlySalesTrend} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Layers size={15} className="text-(--color-primary)" />
+                  Sales by Category
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {!analytics?.categorySales?.length ? (
+                  <p className="text-sm text-(--color-muted-foreground) text-center py-6">
+                    No category data.
+                  </p>
+                ) : (
+                  analytics.categorySales.map((cat) => {
+                    const pct = (cat.revenue / (analytics.salesAnalytics?.totalRevenue || 1)) * 100;
+                    return (
+                      <div key={cat._id} className="space-y-1.5">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium text-(--color-foreground)">
+                            {cat.categoryName}
+                          </span>
+                          <span className="text-(--color-muted-foreground)">
+                            ${cat.revenue.toFixed(2)} ({pct.toFixed(1)}%)
+                          </span>
+                        </div>
+                        <Progress value={pct} />
+                      </div>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Package size={15} className="text-(--color-primary)" />
+                Top 5 Selling Products
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!analytics?.topProducts?.length ? (
+                <p className="text-sm text-(--color-muted-foreground)">No orders placed yet.</p>
+              ) : (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Units</th>
+                      <th>Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.topProducts.map((p, i) => (
+                      <tr key={p.productId}>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 h-6 rounded-full bg-[rgba(99,102,241,0.15)] text-[hsl(243_75%_78%)] text-[10px] font-bold flex items-center justify-center shrink-0">
+                              {i + 1}
+                            </span>
+                            <span className="font-medium">{p.name}</span>
+                          </div>
+                        </td>
+                        <td>{p.totalSold} units</td>
+                        <td className="font-bold">${p.revenue.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </TabsContent>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Inventory Tab Panel
+   --------------------------------------------------------------- */
+function InventoryPanel({
+  products,
+  productsLoading,
+  productsPage,
+  productsTotalPages,
+  categories,
+  editProduct,
+  onEditProduct,
+  onCancelEdit,
+  onCreateProduct,
+  onUpdateProduct,
+  onDeleteProduct,
+  onPageChange,
+}) {
+  return (
+    <TabsContent value="inventory">
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              {editProduct ? (
+                <>
+                  <Edit size={15} /> Edit Product
+                </>
+              ) : (
+                <>
+                  <Plus size={15} /> Add Product
+                </>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {editProduct ? (
+              <ProductForm
+                categories={categories}
+                onSubmit={onUpdateProduct}
+                onCancel={onCancelEdit}
+                isEdit
+                initialValues={{
+                  name: editProduct.name || '',
+                  description: editProduct.description || '',
+                  price: editProduct.price?.toString() || '',
+                  stock: editProduct.stock?.toString() || '',
+                  categoryId: editProduct.categoryId || '',
+                  imageUrl: editProduct.images?.[0] || '',
+                }}
+              />
+            ) : (
+              <ProductForm
+                categories={categories}
+                onSubmit={onCreateProduct}
+                isEdit={false}
+                initialValues={{
+                  name: '',
+                  description: '',
+                  price: '',
+                  stock: '',
+                  categoryId: '',
+                  imageUrl: '',
+                }}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Catalog Products</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {productsLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <p className="text-sm text-(--color-muted-foreground)">No products yet.</p>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th className="text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((p) => (
+                        <tr key={p._id}>
+                          <td>
+                            <div className="flex items-center gap-2.5">
+                              {p.images?.[0] ? (
+                                <img
+                                  src={p.images[0]}
+                                  alt=""
+                                  className="w-8 h-8 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-lg bg-[rgba(255,255,255,0.04)] flex items-center justify-center">
+                                  <Package size={12} className="text-(--color-muted-foreground)" />
+                                </div>
+                              )}
+                              <div>
+                                <p className="font-medium text-sm">{p.name}</p>
+                                <p className="text-[10px] text-(--color-muted-foreground)">
+                                  {p.category?.name}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td>${p.price.toFixed(2)}</td>
+                          <td>
+                            <Badge variant={p.stock > 0 ? 'success' : 'destructive'}>
+                              {p.stock}
+                            </Badge>
+                          </td>
+                          <td>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-border transition-colors"
+                                onClick={() => onEditProduct(p)}
+                              >
+                                <Edit size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                                onClick={() => onDeleteProduct(p._id)}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {productsTotalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={productsPage === 1}
+                      onClick={() => onPageChange(productsPage - 1)}
+                    >
+                      Prev
+                    </Button>
+                    <span className="text-sm text-(--color-muted-foreground)">
+                      Page {productsPage} of {productsTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={productsPage === productsTotalPages}
+                      onClick={() => onPageChange(productsPage + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </TabsContent>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Categories Tab Panel
+   --------------------------------------------------------------- */
+function CategoriesPanel({ categories, catForm, onDeleteCategory }) {
+  return (
+    <TabsContent value="categories">
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Plus size={15} /> Add Category
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                catForm.handleSubmit();
+              }}
+              className="space-y-3"
+            >
+              <catForm.Field name="name">
+                {(field) => (
+                  <div className="space-y-1.5">
+                    <Label>Name</Label>
+                    <Input
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="e.g. Sports & Fitness"
+                      required
+                    />
+                  </div>
+                )}
+              </catForm.Field>
+              <catForm.Field name="description">
+                {(field) => (
+                  <div className="space-y-1.5">
+                    <Label>Description</Label>
+                    <textarea
+                      aria-label="Category description"
+                      className="input-base min-h-20 resize-y"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="Short description…"
+                    />
+                  </div>
+                )}
+              </catForm.Field>
+              <Button type="submit" size="sm" className="w-full">
+                <Plus size={14} /> Create Category
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Active Categories</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th className="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((c) => (
+                  <tr key={c._id}>
+                    <td>
+                      <span className="font-medium">{c.name}</span>
+                    </td>
+                    <td className="text-(--color-muted-foreground) text-xs">
+                      {c.description || '—'}
+                    </td>
+                    <td>
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                          onClick={() => onDeleteCategory(c._id)}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
+    </TabsContent>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Users Tab Panel (Admin)
+   --------------------------------------------------------------- */
+function UsersPanel({ users, usersLoading, currentUser, onRoleChange, onDeleteUser }) {
+  return (
+    <TabsContent value="users">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Registered Accounts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {usersLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-14 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Balance</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u._id}>
+                      <td>
+                        <div className="flex items-center gap-2.5">
+                          <Avatar className="h-7 w-7">
+                            <AvatarFallback className="text-xs">
+                              {(u.name || u.username || '?').charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-sm">{u.name || 'N/A'}</span>
+                        </div>
+                      </td>
+                      <td className="text-(--color-muted-foreground)">@{u.username}</td>
+                      <td>
+                        <select
+                          value={u.role}
+                          onChange={(e) => onRoleChange(u._id, e.target.value)}
+                          className="input-base h-7 px-2 text-xs"
+                          disabled={u._id === currentUser.id}
+                        >
+                          <option value="Buyer">Buyer</option>
+                          <option value="Seller">Seller</option>
+                          <option value="Admin">Admin</option>
+                        </select>
+                      </td>
+                      <td>${(u.balance || 0).toFixed(2)}</td>
+                      <td>
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors disabled:opacity-30"
+                            onClick={() => onDeleteUser(u._id)}
+                            disabled={u._id === currentUser.id}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </TabsContent>
   );
 }
 
@@ -379,19 +863,6 @@ export default function Dashboard() {
   const users = usersQuery.data?.data || [];
   const usersLoading = usersQuery.isLoading;
 
-  // Listeners for errors
-  useEffect(() => {
-    if (analyticsQuery.error) toast.error('Failed to load analytics');
-  }, [analyticsQuery.error]);
-
-  useEffect(() => {
-    if (productsQuery.error) toast.error('Failed to load inventory');
-  }, [productsQuery.error]);
-
-  useEffect(() => {
-    if (usersQuery.error) toast.error('Failed to load users');
-  }, [usersQuery.error]);
-
   const handleCreateProduct = async (value) => {
     try {
       await createProductMutation.mutateAsync({
@@ -435,6 +906,15 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Delete this category?')) return;
+    try {
+      await deleteCategoryMutation.mutateAsync(id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleUserRoleChange = async (userId, newRole) => {
     try {
       await updateUserRoleMutation.mutateAsync({ id: userId, role: newRole });
@@ -456,12 +936,12 @@ export default function Dashboard() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h2
-          className="text-2xl font-bold text-[var(--color-foreground)]"
+          className="text-2xl font-bold text-(--color-foreground)"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           <span className="gradient-text">Management</span> Control Center
         </h2>
-        <p className="text-sm text-[var(--color-muted-foreground)] mt-1">
+        <p className="text-sm text-(--color-muted-foreground) mt-1">
           Orchestrate products, categories, users, and review shop performance.
         </p>
       </div>
@@ -488,465 +968,37 @@ export default function Dashboard() {
           )}
         </TabsList>
 
-        {/* ─── Analytics ─── */}
-        <TabsContent value="analytics" className="space-y-6">
-          {analyticsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-5">
-                    <Skeleton className="h-16 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <StatCard
-                  icon={DollarSign}
-                  label="Total Revenue"
-                  value={`$${(analytics?.salesAnalytics?.totalRevenue || 0).toFixed(2)}`}
-                />
-                <StatCard
-                  icon={ShoppingCart}
-                  label="Total Orders"
-                  value={analytics?.salesAnalytics?.totalOrders || 0}
-                  iconColor="text-[var(--color-success)]"
-                  iconBg="bg-[rgba(16,185,129,0.15)]"
-                />
-                <StatCard
-                  icon={Percent}
-                  label="Avg Order Value"
-                  value={`$${(analytics?.salesAnalytics?.averageOrderValue || 0).toFixed(2)}`}
-                  iconColor="text-[var(--color-warning)]"
-                  iconBg="bg-[rgba(245,158,11,0.15)]"
-                />
-              </div>
+        <AnalyticsPanel analytics={analytics} analyticsLoading={analyticsLoading} />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm">
-                      <TrendingUp size={15} className="text-[var(--color-primary)]" />
-                      Monthly Revenue
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <TrendChart monthlySalesTrend={analytics?.monthlySalesTrend} />
-                  </CardContent>
-                </Card>
+        <InventoryPanel
+          products={products}
+          productsLoading={productsLoading}
+          productsPage={productsPage}
+          productsTotalPages={productsTotalPages}
+          categories={categories}
+          editProduct={editProduct}
+          onEditProduct={setEditProduct}
+          onCancelEdit={() => setEditProduct(null)}
+          onCreateProduct={handleCreateProduct}
+          onUpdateProduct={handleUpdateProduct}
+          onDeleteProduct={handleDeleteProduct}
+          onPageChange={setProductsPage}
+        />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm">
-                      <Layers size={15} className="text-[var(--color-primary)]" />
-                      Sales by Category
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {!analytics?.categorySales?.length ? (
-                      <p className="text-sm text-[var(--color-muted-foreground)] text-center py-6">
-                        No category data.
-                      </p>
-                    ) : (
-                      analytics.categorySales.map((cat) => {
-                        const pct =
-                          (cat.revenue / (analytics.salesAnalytics?.totalRevenue || 1)) * 100;
-                        return (
-                          <div key={cat._id} className="space-y-1.5">
-                            <div className="flex justify-between text-sm">
-                              <span className="font-medium text-[var(--color-foreground)]">
-                                {cat.categoryName}
-                              </span>
-                              <span className="text-[var(--color-muted-foreground)]">
-                                ${cat.revenue.toFixed(2)} ({pct.toFixed(1)}%)
-                              </span>
-                            </div>
-                            <Progress value={pct} />
-                          </div>
-                        );
-                      })
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+        <CategoriesPanel
+          categories={categories}
+          catForm={catForm}
+          onDeleteCategory={handleDeleteCategory}
+        />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <Package size={15} className="text-[var(--color-primary)]" />
-                    Top 5 Selling Products
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {!analytics?.topProducts?.length ? (
-                    <p className="text-sm text-[var(--color-muted-foreground)]">
-                      No orders placed yet.
-                    </p>
-                  ) : (
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Product</th>
-                          <th>Units</th>
-                          <th>Revenue</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analytics.topProducts.map((p, i) => (
-                          <tr key={p.productId}>
-                            <td>
-                              <div className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-full bg-[rgba(99,102,241,0.15)] text-[hsl(243_75%_78%)] text-[10px] font-bold flex items-center justify-center shrink-0">
-                                  {i + 1}
-                                </span>
-                                <span className="font-medium">{p.name}</span>
-                              </div>
-                            </td>
-                            <td>{p.totalSold} units</td>
-                            <td className="font-bold">${p.revenue.toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </TabsContent>
-
-        {/* ─── Inventory ─── */}
-        <TabsContent value="inventory">
-          <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  {editProduct ? (
-                    <>
-                      <Edit size={15} /> Edit Product
-                    </>
-                  ) : (
-                    <>
-                      <Plus size={15} /> Add Product
-                    </>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {editProduct ? (
-                  <ProductForm
-                    categories={categories}
-                    onSubmit={handleUpdateProduct}
-                    onCancel={() => setEditProduct(null)}
-                    isEdit
-                    initialValues={{
-                      name: editProduct.name || '',
-                      description: editProduct.description || '',
-                      price: editProduct.price?.toString() || '',
-                      stock: editProduct.stock?.toString() || '',
-                      categoryId: editProduct.categoryId || '',
-                      imageUrl: editProduct.images?.[0] || '',
-                    }}
-                  />
-                ) : (
-                  <ProductForm
-                    categories={categories}
-                    onSubmit={handleCreateProduct}
-                    isEdit={false}
-                    initialValues={{
-                      name: '',
-                      description: '',
-                      price: '',
-                      stock: '',
-                      categoryId: '',
-                      imageUrl: '',
-                    }}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Catalog Products</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {productsLoading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-14 w-full" />
-                    ))}
-                  </div>
-                ) : products.length === 0 ? (
-                  <p className="text-sm text-[var(--color-muted-foreground)]">No products yet.</p>
-                ) : (
-                  <>
-                    <div className="overflow-x-auto">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Product</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th className="text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {products.map((p) => (
-                            <tr key={p._id}>
-                              <td>
-                                <div className="flex items-center gap-2.5">
-                                  {p.images?.[0] ? (
-                                    <img
-                                      src={p.images[0]}
-                                      alt=""
-                                      className="w-8 h-8 rounded-lg object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-8 h-8 rounded-lg bg-[rgba(255,255,255,0.04)] flex items-center justify-center">
-                                      <Package
-                                        size={12}
-                                        className="text-[var(--color-muted-foreground)]"
-                                      />
-                                    </div>
-                                  )}
-                                  <div>
-                                    <p className="font-medium text-sm">{p.name}</p>
-                                    <p className="text-[10px] text-[var(--color-muted-foreground)]">
-                                      {p.category?.name}
-                                    </p>
-                                  </div>
-                                </div>
-                              </td>
-                              <td>${p.price.toFixed(2)}</td>
-                              <td>
-                                <Badge variant={p.stock > 0 ? 'success' : 'destructive'}>
-                                  {p.stock}
-                                </Badge>
-                              </td>
-                              <td>
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <button
-                                    className="p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[rgba(255,255,255,0.06)] transition-colors"
-                                    onClick={() => setEditProduct(p)}
-                                  >
-                                    <Edit size={13} />
-                                  </button>
-                                  <button
-                                    className="p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
-                                    onClick={() => handleDeleteProduct(p._id)}
-                                  >
-                                    <Trash2 size={13} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {productsTotalPages > 1 && (
-                      <div className="flex items-center justify-center gap-3 mt-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={productsPage === 1}
-                          onClick={() => setProductsPage((p) => p - 1)}
-                        >
-                          Prev
-                        </Button>
-                        <span className="text-sm text-[var(--color-muted-foreground)]">
-                          Page {productsPage} of {productsTotalPages}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={productsPage === productsTotalPages}
-                          onClick={() => setProductsPage((p) => p + 1)}
-                        >
-                          Next
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ─── Categories ─── */}
-        <TabsContent value="categories">
-          <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Plus size={15} /> Add Category
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    catForm.handleSubmit();
-                  }}
-                  className="space-y-3"
-                >
-                  <catForm.Field
-                    name="name"
-                    children={(field) => (
-                      <div className="space-y-1.5">
-                        <Label>Name</Label>
-                        <Input
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder="e.g. Sports & Fitness"
-                          required
-                        />
-                      </div>
-                    )}
-                  />
-                  <catForm.Field
-                    name="description"
-                    children={(field) => (
-                      <div className="space-y-1.5">
-                        <Label>Description</Label>
-                        <textarea
-                          className="input-base min-h-[80px] resize-y"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder="Short description…"
-                        />
-                      </div>
-                    )}
-                  />
-                  <Button type="submit" size="sm" className="w-full">
-                    <Plus size={14} /> Create Category
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Active Categories</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Description</th>
-                      <th className="text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map((c) => (
-                      <tr key={c._id}>
-                        <td>
-                          <span className="font-medium">{c.name}</span>
-                        </td>
-                        <td className="text-[var(--color-muted-foreground)] text-xs">
-                          {c.description || '—'}
-                        </td>
-                        <td>
-                          <div className="flex justify-end">
-                            <button
-                              className="p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
-                              onClick={() => {
-                                if (!window.confirm('Delete this category?')) return;
-                                deleteCategoryMutation.mutate(c._id);
-                              }}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ─── Users (Admin) ─── */}
         {currentUser?.role === 'admin' && (
-          <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Registered Accounts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {usersLoading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-14 w-full" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>User</th>
-                          <th>Username</th>
-                          <th>Role</th>
-                          <th>Balance</th>
-                          <th className="text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.map((u) => (
-                          <tr key={u._id}>
-                            <td>
-                              <div className="flex items-center gap-2.5">
-                                <Avatar className="h-7 w-7">
-                                  <AvatarFallback className="text-xs">
-                                    {(u.name || u.username || '?').charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium text-sm">{u.name || 'N/A'}</span>
-                              </div>
-                            </td>
-                            <td className="text-[var(--color-muted-foreground)]">@{u.username}</td>
-                            <td>
-                              <select
-                                value={u.role}
-                                onChange={(e) => handleUserRoleChange(u._id, e.target.value)}
-                                className="input-base h-7 px-2 text-xs"
-                                disabled={u._id === currentUser.id}
-                              >
-                                <option value="Buyer">Buyer</option>
-                                <option value="Seller">Seller</option>
-                                <option value="Admin">Admin</option>
-                              </select>
-                            </td>
-                            <td>${(u.balance || 0).toFixed(2)}</td>
-                            <td>
-                              <div className="flex justify-end">
-                                <button
-                                  className="p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors disabled:opacity-30"
-                                  onClick={() => handleDeleteUser(u._id)}
-                                  disabled={u._id === currentUser.id}
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+          <UsersPanel
+            users={users}
+            usersLoading={usersLoading}
+            currentUser={currentUser}
+            onRoleChange={handleUserRoleChange}
+            onDeleteUser={handleDeleteUser}
+          />
         )}
       </Tabs>
     </div>

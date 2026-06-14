@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import useCartStore from '@/stores/cartStore';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ArrowRight, Minus, PackageOpen, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -71,7 +71,7 @@ export default function Cart() {
         <div className="lg:col-span-2 space-y-3">
           <AnimatePresence>
             {items.map(({ product, quantity }) => (
-              <motion.div
+              <m.div
                 key={product._id}
                 layout
                 initial={{ opacity: 0, y: 10 }}
@@ -114,6 +114,7 @@ export default function Cart() {
                         <div className="flex items-center justify-between mt-3">
                           <div className="flex items-center border border-[var(--color-border)] rounded-lg overflow-hidden">
                             <button
+                              type="button"
                               className="px-2.5 py-1.5 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
                               onClick={() => updateCartQuantity(product._id, quantity - 1)}
                             >
@@ -123,6 +124,7 @@ export default function Cart() {
                               {quantity}
                             </span>
                             <button
+                              type="button"
                               className="px-2.5 py-1.5 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
                               onClick={() => updateCartQuantity(product._id, quantity + 1)}
                             >
@@ -135,6 +137,7 @@ export default function Cart() {
                               ${(product.price * quantity).toFixed(2)}
                             </span>
                             <button
+                              type="button"
                               className="p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
                               onClick={() => removeFromCart(product._id)}
                             >
@@ -146,7 +149,7 @@ export default function Cart() {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>
