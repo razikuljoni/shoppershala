@@ -1,8 +1,7 @@
-import * as React from 'react';
-import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { cn } from '@/lib/utils';
+import * as ProgressPrimitive from '@radix-ui/react-progress';
 
-const Progress = React.forwardRef(({ className, value, ...props }, ref) => (
+const Progress = ({ className, value, ref, ...props }) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
@@ -16,7 +15,7 @@ const Progress = React.forwardRef(({ className, value, ...props }, ref) => (
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>
-));
+);
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
 export { Progress };

@@ -32,9 +32,11 @@ const useNotifyMutation = (
    ------------------------------------------------------------------ */
 
 export const useLogin = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ username, password }) => api.auth.login(username, password),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Welcome back!');
     },
     onError: (error) => {
@@ -44,23 +46,17 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ name, username, password, role }) =>
       api.auth.register(name, username, password, role),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Account created successfully!');
     },
     onError: (error) => {
       toast.error(error.message || 'Registration failed');
     },
-  });
-};
-
-export const useWhoami = (options = {}) => {
-  return useQuery({
-    queryKey: ['whoami'],
-    queryFn: () => api.auth.whoami(),
-    ...options,
   });
 };
 
@@ -186,14 +182,6 @@ export const useCreateReview = (productId) => {
    Wishlist Hooks
    ------------------------------------------------------------------ */
 
-export const useWishlist = (options = {}) => {
-  return useQuery({
-    queryKey: ['wishlist'],
-    queryFn: () => api.wishlist.get(),
-    ...options,
-  });
-};
-
 export const useAddToWishlist = () => {
   return useNotifyMutation((productId) => api.wishlist.add(productId), {
     successMessage: 'Added to wishlist',
@@ -216,15 +204,6 @@ export const useUsers = (options = {}) => {
   return useQuery({
     queryKey: ['users'],
     queryFn: () => api.users.getAll(1, 100),
-    ...options,
-  });
-};
-
-export const useUser = (id, options = {}) => {
-  return useQuery({
-    queryKey: ['user', id],
-    queryFn: () => api.users.getById(id),
-    enabled: !!id,
     ...options,
   });
 };

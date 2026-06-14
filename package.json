@@ -1,6 +1,6 @@
 {
   "name": "Shoppershala",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Fullstack monorepo with Express backend and Vite+React frontend",
   "private": true,
   "scripts": {
@@ -17,7 +17,8 @@
     "format": "prettier --write \"**/*.{js,jsx,json,yaml,yml,md,css,html}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,json,yaml,yml,md,css,html}\"",
     "test": "pnpm --recursive run test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "doctor": "pnpx react-doctor@latest"
   },
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
@@ -25,6 +26,7 @@
     "@commitlint/config-conventional": "^21.0.2",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
-    "prettier": "^3.8.4"
+    "prettier": "^3.8.4",
+    "react-doctor": "^0.5.5"
   }
 }

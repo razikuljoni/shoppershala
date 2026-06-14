@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import { api } from '@/utils/api';
+import { create } from 'zustand';
 import useWishlistStore from './wishlistStore';
 
 const useAuthStore = create((set) => ({
@@ -18,10 +18,14 @@ const useAuthStore = create((set) => ({
   login: async (user) => {
     set({ currentUser: user });
     try {
+      console.log('login user ==> ', user);
+
       const [userRes, wishRes] = await Promise.all([
         api.users.getById(user.id),
         api.wishlist.get(),
       ]);
+      console.log('userRes ==> ', userRes);
+
       set((state) => ({
         currentUser: {
           ...state.currentUser,
@@ -30,8 +34,12 @@ const useAuthStore = create((set) => ({
         },
       }));
       if (wishRes.data?.products) {
+        console.log('inside if');
+
         useWishlistStore.getState().setWishlist(wishRes.data.products.map((p) => p._id));
       }
+      console.log('before return');
+
       return wishRes.data?.products?.map((p) => p._id) || [];
     } catch (e) {
       console.error(e);
@@ -69,6 +77,8 @@ const useAuthStore = create((set) => ({
         useWishlistStore.getState().setWishlist(wishRes.data.products.map((p) => p._id));
       }
     } catch {
+      console.log('catch ==> ');
+
       localStorage.removeItem('token');
       set({ currentUser: null });
     } finally {
