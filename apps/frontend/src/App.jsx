@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, LazyMotion, domAnimation, m } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Navigate, Route, HashRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
@@ -17,6 +17,14 @@ import Dashboard from '@/pages/Dashboard';
 import ProductDetails from '@/pages/ProductDetails';
 import Profile from '@/pages/Profile';
 
+/* addToast shim — delegate to Sonner */
+function addToast(msg, type = 'info') {
+  if (type === 'success') toast.success(msg);
+  else if (type === 'error') toast.error(msg);
+  else if (type === 'warning') toast.warning(msg);
+  else toast.info(msg);
+}
+
 /* ---------------------------------------------------------------
    Page transition wrapper
    --------------------------------------------------------------- */
@@ -28,9 +36,9 @@ const pageVariants = {
 
 function PageTransition({ children }) {
   return (
-    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
+    <m.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -53,11 +61,11 @@ function RequireSeller({ currentUser, children }) {
    --------------------------------------------------------------- */
 function BootLoader() {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[var(--color-background)]">
+    <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-5">
         <div className="relative">
           <Skeleton className="w-16 h-16 rounded-2xl" />
-          <div className="absolute inset-0 rounded-2xl border-2 border-[var(--color-primary)] animate-spin border-t-transparent" />
+          <div className="absolute inset-0 rounded-2xl border-2 border-(--color-primary) animate-spin border-t-transparent" />
         </div>
         <div className="text-center space-y-1.5">
           <h2
@@ -66,13 +74,13 @@ function BootLoader() {
           >
             Shoppershala
           </h2>
-          <p className="text-sm text-[var(--color-muted-foreground)]">Syncing secure session…</p>
+          <p className="text-sm text-(--color-muted-foreground)">Syncing secure session…</p>
         </div>
         <div className="flex gap-2">
           {[0, 1, 2].map((i) => (
             <div
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-bounce"
+              key={'loader-dot-' + i}
+              className="w-1.5 h-1.5 rounded-full bg-(--color-primary) animate-pulse"
               style={{ animationDelay: `${i * 0.15}s` }}
             />
           ))}
@@ -90,14 +98,7 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [cart, setCart] = useState({});
   const [wishlist, setWishlist] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-
-  /* Close sidebar on route change */
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSidebarOpen(false);
-  }, [location]);
 
   /* Boot: check existing session */
   useEffect(() => {
@@ -218,12 +219,6 @@ function AppContent() {
   const cartItemCount = Object.values(cart).reduce((s, i) => s + i.quantity, 0);
 
   /* addToast shim — delegate to Sonner */
-  const addToast = (msg, type = 'info') => {
-    if (type === 'success') toast.success(msg);
-    else if (type === 'error') toast.error(msg);
-    else if (type === 'warning') toast.warning(msg);
-    else toast.info(msg);
-  };
 
   if (authLoading) return <BootLoader />;
 
@@ -361,19 +356,12 @@ function AppContent() {
   );
 
   return (
-    <>
+    <LazyMotion features={domAnimation}>
       {isAuthPage ? (
         /* Auth page — full screen, no shell */
-        <div className="min-h-screen bg-[var(--color-background)]">{appContent}</div>
+        <div className="min-h-screen bg-background">{appContent}</div>
       ) : (
-        <AppShell
-          currentUser={currentUser}
-          cartItemCount={cartItemCount}
-          onLogout={handleLogout}
-          sidebarOpen={sidebarOpen}
-          onSidebarOpen={() => setSidebarOpen(true)}
-          onSidebarClose={() => setSidebarOpen(false)}
-        >
+        <AppShell currentUser={currentUser} cartItemCount={cartItemCount} onLogout={handleLogout}>
           {appContent}
         </AppShell>
       )}
@@ -397,7 +385,7 @@ function AppContent() {
           },
         }}
       />
-    </>
+    </LazyMotion>
   );
 }
 
