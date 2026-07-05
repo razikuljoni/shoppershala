@@ -3,25 +3,7 @@ import * as authService from '#services/auth.service.js';
 import { verifyToken } from '#utils/jwt.util.js';
 
 export const register = asyncHandler(async (req, res) => {
-  const { name, username, password, role } = req.body;
-  console.log('controller -', req.body);
-
-  const missingFields = [];
-  if (!name) missingFields.push('name');
-  if (!username) missingFields.push('username');
-  if (!password) missingFields.push('password');
-
-  if (missingFields.length > 0) {
-    return res.status(400).json({
-      error: `${missingFields.join(', ')} ${missingFields.length === 1 ? 'is' : 'are'} required`,
-    });
-  }
-
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  }
-
-  const result = await authService.registerUser(name, username, password, role);
+  const result = await authService.registerUser(req.body);
 
   res.status(201).json({
     message: 'User registered successfully',

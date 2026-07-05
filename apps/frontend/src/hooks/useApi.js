@@ -48,8 +48,7 @@ export const useLogin = () => {
 export const useRegister = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ name, username, password, role }) =>
-      api.auth.register(name, username, password, role),
+    mutationFn: (userData) => api.auth.register(userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Account created successfully!');

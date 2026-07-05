@@ -20,6 +20,8 @@ export default function Auth({ onLogin: onLoginProp }) {
   const form = useForm({
     defaultValues: {
       name: '',
+      email: '',
+      phone: '',
       username: '',
       password: '',
       role: 'Buyer',
@@ -31,26 +33,16 @@ export default function Auth({ onLogin: onLoginProp }) {
             username: value.username,
             password: value.password,
           });
-          localStorage.setItem('token', res.data.token);
-          const userData = { ...res.data.user };
+          const { token, user } = res.data;
+          localStorage.setItem('token', token);
+          const userData = { ...user };
           await login(userData);
           onLoginProp?.(userData);
         } else {
           if (!value.name.trim()) return;
-          const res = await registerMutation.mutateAsync({
-            name: value.name,
-            username: value.username,
-            password: value.password,
-            role: value.role,
-          });
-          localStorage.setItem('token', res.data.token);
-          const regUser = {
-            id: res.data.user.id,
-            username: res.data.user.username,
-            role: res.data.user.role,
-            name: res.data.user.name || res.data.user.username,
-            balance: 0,
-          };
+          const res = await registerMutation.mutateAsync(value);
+          const { token, user: regUser } = res.data;
+          localStorage.setItem('token', token);
           await login(regUser);
           onLoginProp?.(regUser);
         }
@@ -225,7 +217,7 @@ export default function Auth({ onLogin: onLoginProp }) {
                           id="phone"
                           name="phone"
                           type="number"
-                          placeholder="123-456-7890"
+                          placeholder="0163-4567890"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                           required
@@ -247,8 +239,8 @@ export default function Auth({ onLogin: onLoginProp }) {
                           onChange={(e) => field.handleChange(e.target.value)}
                           className="input-base h-10 px-3"
                         >
-                          <option value="buyer">Buyer</option>
-                          <option value="seller">Seller</option>
+                          <option value="Buyer">Buyer</option>
+                          <option value="Seller">Seller</option>
                         </select>
                       </div>
                     )}
@@ -269,34 +261,38 @@ export default function Auth({ onLogin: onLoginProp }) {
               </m.form>
             </AnimatePresence>
 
-            <div className="mt-5 p-3 rounded-xl bg-[rgba(99,102,241,0.07)] border border-[rgba(99,102,241,0.15)]">
-              <p className="text-[11px] font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2">
-                Demo Credentials
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { role: 'admin', user: 'admin', pass: 'admin123' },
-                  { role: 'seller', user: 'seller', pass: 'seller123' },
-                  { role: 'buyer', user: 'buyer', pass: 'buyer123' },
-                ].map(({ role, user, pass }) => (
-                  <button
-                    key={role}
-                    type="button"
-                    className="text-left p-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-border hover:border-border-hover transition-colors"
-                    onClick={() => {
-                      setMode('login');
-                      form.setFieldValue('username', user);
-                      form.setFieldValue('password', pass);
-                    }}
-                  >
-                    <p className="text-[10px] font-bold text-(--color-primary) capitalize mb-0.5">
-                      {role}
-                    </p>
-                    <p className="text-[10px] text-(--color-muted-foreground) font-mono">{user}</p>
-                  </button>
-                ))}
+            {mode === 'login' && (
+              <div className="mt-5 p-3 rounded-xl bg-[rgba(99,102,241,0.07)] border border-[rgba(99,102,241,0.15)]">
+                <p className="text-[11px] font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2">
+                  Demo Credentials
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { role: 'Admin', user: 'admin', pass: 'admin123' },
+                    { role: 'Seller', user: 'seller', pass: 'seller123' },
+                    { role: 'Buyer', user: 'buyer', pass: 'buyer123' },
+                  ].map(({ role, user, pass }) => (
+                    <button
+                      key={role}
+                      type="button"
+                      className="text-left p-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-border hover:border-border-hover transition-colors"
+                      onClick={() => {
+                        setMode('login');
+                        form.setFieldValue('username', user);
+                        form.setFieldValue('password', pass);
+                      }}
+                    >
+                      <p className="text-[10px] font-bold text-(--color-primary) capitalize mb-0.5">
+                        {role}
+                      </p>
+                      <p className="text-[10px] text-(--color-muted-foreground) font-mono">
+                        {user}
+                      </p>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </m.div>

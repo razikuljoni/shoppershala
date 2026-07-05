@@ -4,8 +4,8 @@ import { z } from 'zod';
 export const registerSchema = z.object({
   name: z.string().min(3, 'Name is required'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email format'),
-  phone: z.number({ message: 'Phone number is required' }),
+  email: z.email('Email is required'),
+  phone: z.string({ message: 'Phone number is required' }),
   role: z.enum(USER_ROLES, { message: 'Invalid role' }).default(USER_TYPES.BUYER),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   balance: z.number().default(0).optional(),
@@ -20,8 +20,8 @@ export const loginSchema = z.object({
 export const createUserSchema = z.object({
   name: z.string().min(3, 'Name is required'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email format'),
-  phone: z.number({ message: 'Phone number is required' }),
+  email: z.email('Email is required'),
+  phone: z.string({ message: 'Phone number is required' }),
   role: z.enum(USER_ROLES, { message: 'Invalid role' }),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   balance: z.number().default(0).optional(),
@@ -31,8 +31,8 @@ export const createUserSchema = z.object({
 export const updateUserSchema = z.object({
   name: z.string().min(3).optional(),
   username: z.string().min(3).optional(),
-  email: z.string().email().optional(),
-  phone: z.number().optional(),
+  email: z.email('Invalid email format').optional(),
+  phone: z.string().optional(),
   password: z.string().min(6).optional(),
   balance: z.number().default(0).optional(),
   avatar: z.string().url().optional().nullable(),

@@ -2,8 +2,6 @@ import logger from '#utils/logger.js';
 
 export const validate = (schema) => {
   return (req, res, next) => {
-    console.log('req ', req.body);
-
     try {
       req.body = schema.parse(req.body);
       next();

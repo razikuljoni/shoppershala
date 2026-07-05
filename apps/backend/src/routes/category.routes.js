@@ -7,8 +7,8 @@ import express from 'express';
 const router = express.Router();
 
 router.post('/', authenticate, validate(createCategorySchema), categoryController.createCategory);
-router.get('/', authenticate, categoryController.getAllCategories);
-router.get('/:id', authenticate, categoryController.getCategoryById);
+router.get('/', categoryController.getAllCategories);
+router.get('/:id', categoryController.getCategoryById);
 router.patch(
   '/:id',
   authenticate,

@@ -66,10 +66,10 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       }),
-    register: (name, username, password, role = 'buyer') =>
+    register: (userData) =>
       request('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, username, password, role }),
+        body: JSON.stringify(userData),
       }),
     whoami: () => request('/auth/whoami'),
   },

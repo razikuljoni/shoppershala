@@ -110,6 +110,10 @@ export default function Checkout() {
   const balance = currentUser?.balance || 0;
   const canAfford = balance >= subtotal;
 
+  console.log('subtotal --> ', subtotal.toFixed(2));
+  console.log('balance --> ', balance.toFixed(2));
+  console.log('canAfford --> ', canAfford);
+
   const form = useForm({
     defaultValues: {
       name: currentUser?.name || '',
