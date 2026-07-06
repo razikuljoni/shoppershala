@@ -40,6 +40,10 @@ app.get('/', (_req, res) => {
 const apiV1 = express.Router();
 app.use('/api/v1', apiV1);
 
+apiV1.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Register all routes under /api/v1
 apiV1.use('/auth', authRoutes);
 apiV1.use('/users', userRoutes);

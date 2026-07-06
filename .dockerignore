@@ -1,0 +1,79 @@
+# ============================================
+# Shoppershala — Docker Ignore
+# ============================================
+# Excludes files from Docker build context
+
+# Dependencies
+node_modules/
+.pnpm-store/
+apps/backend/node_modules/
+apps/frontend/node_modules/
+
+# Build output
+apps/frontend/dist/
+apps/backend/logs/
+
+# Environment files (secrets)
+.env
+.env.*
+apps/backend/.env
+apps/backend/.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+**.log
+logs/
+
+# Testing
+coverage/
+lcov.info
+.vitest/
+
+# Docker (avoid recursive copies)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+!apps/*/README.md
+
+# CI/CD
+.github/
+
+# AI / Config
+.opencode/
+.claude/
+.agents/
+.codegraph/
+.omo/
+.qoder/
+skills/
+skills-lock.json
+
+# Linting / Formatting cache
+.eslintcache
+.prettiercache
+
+# Husky
+.husky/_
+
+# Commitlint
+.commitlintrc
