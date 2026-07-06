@@ -32,7 +32,14 @@ export const getUserById = async (userId) => {
 };
 
 export const updateUser = async (userId, updateData) => {
-  return await userModel.updateUser(userId, updateData);
+  const sanitized = { ...updateData };
+  if (sanitized.password) {
+    if (sanitized.password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+    sanitized.password = await hashPassword(sanitized.password);
+  }
+  return await userModel.updateUser(userId, sanitized);
 };
 
 export const deleteUser = async (userId) => {

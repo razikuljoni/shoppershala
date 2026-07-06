@@ -25,8 +25,8 @@ const useWishlistStore = create((set, get) => ({
         await api.wishlist.add(productId);
         set((state) => ({ wishlist: [...state.wishlist, productId] }));
       }
-    } catch (err) {
-      console.error('Wishlist toggle failed:', err);
+    } catch {
+      toast.error('Failed to update wishlist');
     }
   },
 }));

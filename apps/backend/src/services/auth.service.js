@@ -53,8 +53,10 @@ export const registerUser = async ({
 
   const token = generateToken({
     userId: result.insertedId.toString(),
+    name,
     username,
     role,
+    balance: 0,
   });
 
   return {
@@ -76,8 +78,10 @@ export const loginUser = async (username, password) => {
 
   const token = generateToken({
     userId: user._id.toString(),
+    name: user.name,
     username: user.username,
     role: user.role,
+    balance: user.balance || 0,
   });
 
   return { token, user: buildAuthUser(user) };

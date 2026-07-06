@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMyOrders, useMyReviews, useUpdateUser } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
+import { useState } from 'react';
 import { Loader2, Package, PenLine, Plus, Shield, Star, User, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -99,7 +100,7 @@ function ProfileOrders({ loading, orders }) {
   );
 }
 
-function ProfileWallet({ currentUser, totalSpent, walletForm, topping }) {
+function ProfileWallet({ currentUser, totalSpent, walletForm, topping, walletError }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <Card>
@@ -148,6 +149,11 @@ function ProfileWallet({ currentUser, totalSpent, walletForm, topping }) {
             }}
             className="space-y-4"
           >
+            {walletError && (
+              <div className="p-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-sm text-red-400">
+                {walletError}
+              </div>
+            )}
             <walletForm.Field name="amount">
               {(field) => (
                 <div className="space-y-1.5">
@@ -248,7 +254,7 @@ function ProfileReviews({ loading, reviews }) {
   );
 }
 
-function ProfileSettings({ profileForm, savingProfile }) {
+function ProfileSettings({ profileForm, savingProfile, profileError }) {
   return (
     <Card>
       <CardHeader>
@@ -266,6 +272,11 @@ function ProfileSettings({ profileForm, savingProfile }) {
           }}
           className="space-y-4 max-w-md"
         >
+          {profileError && (
+            <div className="p-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-sm text-red-400">
+              {profileError}
+            </div>
+          )}
           <profileForm.Field name="name">
             {(field) => (
               <div className="space-y-1.5">
@@ -323,6 +334,9 @@ export default function Profile() {
   const saveProfileMutation = useUpdateUser();
   const topUpMutation = useUpdateUser({ successMessage: null });
 
+  const [profileError, setProfileError] = useState(null);
+  const [walletError, setWalletError] = useState(null);
+
   const ordersLoading = myOrdersQuery.isLoading || myReviewsQuery.isLoading;
   const orders = myOrdersQuery.data?.data || [];
   const myReviews = myReviewsQuery.data?.data || [];
@@ -336,6 +350,7 @@ export default function Profile() {
       password: '',
     },
     onSubmit: async ({ value }) => {
+      setProfileError(null);
       try {
         const payload = {};
         if (value.name.trim() && value.name !== currentUser.name) payload.name = value.name.trim();
@@ -353,7 +368,8 @@ export default function Profile() {
         });
         profileForm.setFieldValue('password', '');
       } catch (err) {
-        console.error('Failed to save profile:', err);
+        const msg = err.message || 'Failed to save profile';
+        setProfileError(msg);
       }
     },
   });
@@ -361,22 +377,26 @@ export default function Profile() {
   const walletForm = useForm({
     defaultValues: { amount: '' },
     onSubmit: async ({ value }) => {
+      setWalletError(null);
       const amount = parseFloat(value.amount);
       if (!amount || amount <= 0 || isNaN(amount)) {
-        toast.error('Enter a valid amount');
+        const msg = 'Enter a valid amount';
+        setWalletError(msg);
+        toast.error(msg);
         return;
       }
       try {
-        const newBalance = (currentUser.balance || 0) + amount;
+        const newBalance = (currentUser?.balance || 0) + amount;
         await topUpMutation.mutateAsync({
-          id: currentUser.id,
+          id: currentUser?.id,
           userData: { balance: newBalance },
         });
         updateUser({ balance: newBalance });
         walletForm.reset();
         toast.success(`Wallet topped up with $${amount.toFixed(2)}!`);
       } catch (err) {
-        console.error('Top-up failed:', err);
+        const msg = err.message || 'Top-up failed';
+        setWalletError(msg);
       }
     },
   });
@@ -466,6 +486,7 @@ export default function Profile() {
             totalSpent={totalSpent}
             walletForm={walletForm}
             topping={topping}
+            walletError={walletError}
           />
         </TabsContent>
 
@@ -474,7 +495,11 @@ export default function Profile() {
         </TabsContent>
 
         <TabsContent value="settings">
-          <ProfileSettings profileForm={profileForm} savingProfile={savingProfile} />
+          <ProfileSettings
+            profileForm={profileForm}
+            savingProfile={savingProfile}
+            profileError={profileError}
+          />
         </TabsContent>
       </Tabs>
     </div>

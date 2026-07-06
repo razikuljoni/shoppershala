@@ -1,3 +1,4 @@
+import logger from '#utils/logger.js';
 import * as orderModel from '#models/order.model.js';
 import * as productModel from '#models/product.model.js';
 import { ObjectId } from 'mongodb';
@@ -6,6 +7,7 @@ export const createOrder = async (userId, orderData) => {
   const { items, shippingAddress } = orderData;
 
   if (!items || items.length === 0) {
+    logger.warn('Order creation failed — no items', { userId });
     throw new Error('Order must contain at least one item');
   }
 
@@ -14,8 +16,17 @@ export const createOrder = async (userId, orderData) => {
 
   for (const item of items) {
     const product = await productModel.findProductById(item.productId);
-    if (!product) throw new Error(`Product not found: ${item.productId}`);
+    if (!product) {
+      logger.warn('Order creation failed — product not found', { productId: item.productId });
+      throw new Error(`Product not found: ${item.productId}`);
+    }
     if (product.stock < item.quantity) {
+      logger.warn('Order creation failed — insufficient stock', {
+        productId: item.productId,
+        productName: product.name,
+        available: product.stock,
+        requested: item.quantity,
+      });
       throw new Error(
         `Insufficient stock for product: ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`,
       );
@@ -35,6 +46,13 @@ export const createOrder = async (userId, orderData) => {
       stock: product.stock - item.quantity,
       updatedAt: new Date(),
     });
+
+    logger.info('Stock deducted', {
+      productId: item.productId,
+      productName: product.name,
+      deducted: item.quantity,
+      remaining: product.stock - item.quantity,
+    });
   }
 
   const orderWithMeta = {
@@ -48,6 +66,13 @@ export const createOrder = async (userId, orderData) => {
   };
 
   const result = await orderModel.createOrder(orderWithMeta);
+
+  logger.info('Order persisted', {
+    orderId: result.insertedId,
+    userId,
+    totalAmount: calculatedTotal,
+    itemCount: orderItems.length,
+  });
 
   return {
     ...orderWithMeta,

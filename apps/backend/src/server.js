@@ -1,6 +1,9 @@
+// MUST be first — loads .env before any other module reads process.env
+import '#config/env.js';
+
 import logger from '#utils/logger.js';
 import app from './app.js';
-import { closeDbConnection, connectDb } from './config/db.js';
+import { closeDbConnection, connectDb } from '#config/db.js';
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;

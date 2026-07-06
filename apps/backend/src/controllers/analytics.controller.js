@@ -1,3 +1,4 @@
+import logger from '#utils/logger.js';
 import * as service from '#services/analytics.service.js';
 import { asyncHandler } from '#middlewares/asyncHandler.middleware.js';
 

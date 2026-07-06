@@ -6,8 +6,8 @@ import { Toaster, toast } from 'sonner';
 import AiCopilot from '@/components/AiCopilot';
 import AppShell from '@/components/layout/AppShell';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAddToWishlist, useRemoveFromWishlist } from '@/hooks/useApi';
-import { api } from '@/utils/api';
+import useAuthStore from '@/stores/authStore';
+import useWishlistStore from '@/stores/wishlistStore';
 
 import Auth from '@/pages/Auth';
 import Cart from '@/pages/Cart';
@@ -94,101 +94,35 @@ function BootLoader() {
    Main App Content
    --------------------------------------------------------------- */
 function AppContent() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const authLoading = useAuthStore((s) => s.authLoading);
+  const updateUser = useAuthStore((s) => s.updateUser);
+  const checkAuthToken = useAuthStore((s) => s.checkAuthToken);
+  const logout = useAuthStore((s) => s.logout);
+
   const [cart, setCart] = useState({});
-  const [wishlist, setWishlist] = useState([]);
+  const wishlist = useWishlistStore((s) => s.wishlist);
+  const toggleWishlistStore = useWishlistStore((s) => s.toggleWishlist);
   const location = useLocation();
 
   /* Boot: check existing session */
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     checkAuthToken();
-  }, []);
-
-  const checkAuthToken = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setAuthLoading(false);
-      return;
-    }
-    try {
-      const res = await api.auth.whoami();
-      const base = {
-        id: res.data.id,
-        username: res.data.username,
-        role: res.data.role,
-        balance: 0,
-      };
-      setCurrentUser(base);
-      const [userRes, wishRes] = await Promise.all([
-        api.users.getById(res.data.id),
-        api.wishlist.get(),
-      ]);
-      setCurrentUser((prev) => ({
-        ...prev,
-        name: userRes.data.name,
-        balance: userRes.data.balance || 0,
-      }));
-      if (wishRes.data?.products) setWishlist(wishRes.data.products.map((p) => p._id));
-    } catch {
-      localStorage.removeItem('token');
-      setCurrentUser(null);
-    } finally {
-      setAuthLoading(false);
-    }
-  };
+  }, [checkAuthToken]);
 
   const handleLogin = async (user) => {
-    setCurrentUser(user);
-    try {
-      const [userRes, wishRes] = await Promise.all([
-        api.users.getById(user.id),
-        api.wishlist.get(),
-      ]);
-      setCurrentUser((prev) => ({
-        ...prev,
-        name: userRes.data.name,
-        balance: userRes.data.balance || 0,
-      }));
-      if (wishRes.data?.products) setWishlist(wishRes.data.products.map((p) => p._id));
-    } catch (e) {
-      console.error(e);
-    }
+    await useAuthStore.getState().login(user);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setCurrentUser(null);
-    setWishlist([]);
+    logout();
     setCart({});
     toast.info('Logged out successfully');
   };
 
-  const handleUserUpdate = (updatedUser) => setCurrentUser(updatedUser);
+  const handleUserUpdate = (updates) => updateUser(updates);
 
-  /* Wishlist */
-  const addToWishlist = useAddToWishlist();
-  const removeFromWishlist = useRemoveFromWishlist();
-
-  const toggleWishlist = async (productId) => {
-    if (!currentUser) {
-      toast.warning('Please sign in to manage your wishlist');
-      return;
-    }
-    const inWishlist = wishlist.includes(productId);
-    try {
-      if (inWishlist) {
-        await removeFromWishlist.mutateAsync(productId);
-        setWishlist((prev) => prev.filter((id) => id !== productId));
-      } else {
-        await addToWishlist.mutateAsync(productId);
-        setWishlist((prev) => [...prev, productId]);
-      }
-    } catch (err) {
-      console.error('Wishlist toggle failed:', err);
-    }
-  };
+  const toggleWishlist = (productId) => toggleWishlistStore(productId, currentUser);
 
   /* Cart */
   const addToCart = (product) => {
@@ -217,8 +151,6 @@ function AppContent() {
   const clearCart = () => setCart({});
 
   const cartItemCount = Object.values(cart).reduce((s, i) => s + i.quantity, 0);
-
-  /* addToast shim — delegate to Sonner */
 
   if (authLoading) return <BootLoader />;
 

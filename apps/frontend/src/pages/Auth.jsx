@@ -7,6 +7,7 @@ import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
 import { AnimatePresence, m } from 'framer-motion';
 import { Eye, EyeOff, Loader2, Store } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCallback, useState } from 'react';
 
 export default function Auth({ onLogin: onLoginProp }) {
@@ -47,7 +48,7 @@ export default function Auth({ onLogin: onLoginProp }) {
           onLoginProp?.(regUser);
         }
       } catch (err) {
-        console.log('error', err);
+        toast.error(err?.message || 'An unexpected error occurred');
       }
     },
   });

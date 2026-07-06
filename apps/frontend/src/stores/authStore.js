@@ -34,8 +34,7 @@ const useAuthStore = create((set) => ({
       }
 
       return wishRes.data?.products?.map((p) => p._id) || [];
-    } catch (e) {
-      console.error(e);
+    } catch {
       return [];
     }
   },
@@ -44,7 +43,7 @@ const useAuthStore = create((set) => ({
     const token = localStorage.getItem('token');
     if (!token) {
       set({ authLoading: false });
-      return;
+      return [];
     }
     try {
       const res = await api.auth.whoami();
@@ -66,12 +65,15 @@ const useAuthStore = create((set) => ({
           balance: userRes.data.balance || 0,
         },
       });
-      if (wishRes.data?.products) {
-        useWishlistStore.getState().setWishlist(wishRes.data.products.map((p) => p._id));
+      const wishlistIds = wishRes.data?.products?.map((p) => p._id) || [];
+      if (wishlistIds.length > 0) {
+        useWishlistStore.getState().setWishlist(wishlistIds);
       }
+      return wishlistIds;
     } catch {
       localStorage.removeItem('token');
       set({ currentUser: null });
+      return [];
     } finally {
       set({ authLoading: false });
     }
