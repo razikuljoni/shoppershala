@@ -50,3 +50,5 @@ lcov.info
 
 # Husky
 .husky/_/
+
+.omo

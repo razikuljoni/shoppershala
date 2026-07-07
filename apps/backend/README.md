@@ -39,7 +39,7 @@ A production-ready RESTful API built with Express.js, MongoDB, and JWT authentic
 ## Project Structure
 
 ```
-crud-express/
+shoppershala/
 ├── src/
 │   ├── config/
 │   │   └── db.js                  # MongoDB connection manager
@@ -207,7 +207,7 @@ Global Error Handler (if error occurs)
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd crud-express
+cd shoppershala
 
 # Install dependencies
 pnpm install
@@ -222,7 +222,7 @@ nano .env
 ```env
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017
-DB_NAME=crud-express
+DB_NAME=shoppershala
 JWT_SECRET=your_secure_secret_key_here
 NODE_ENV=development
 ```
@@ -636,7 +636,7 @@ Invalid requests return `400` with specific field-level error messages.
 
 ```bash
 pnpm add -g pm2
-pm2 start src/server.js --name crud-express
+pm2 start src/server.js --name shoppershala
 pm2 save
 pm2 startup
 ```
@@ -647,7 +647,7 @@ pm2 startup
 NODE_ENV=production
 PORT=3000
 MONGODB_URI=mongodb://user:pass@host:port/dbname?authSource=admin
-DB_NAME=crud-express
+DB_NAME=shoppershala
 JWT_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
 ```
 

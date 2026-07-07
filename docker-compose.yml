@@ -20,7 +20,7 @@ services:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
     environment:
-      MONGO_INITDB_DATABASE: ${DB_NAME:-crud-express}
+      MONGO_INITDB_DATABASE: ${DB_NAME:-shoppershala}
     healthcheck:
       test: ['CMD', 'mongosh', '--eval', 'db.adminCommand("ping")']
       interval: 10s
@@ -43,9 +43,9 @@ services:
       NODE_ENV: production
       PORT: 3000
       MONGODB_URI: mongodb://mongodb:27017
-      DB_NAME: ${DB_NAME:-crud-express}
+      DB_NAME: ${DB_NAME:-shoppershala}
       JWT_SECRET: ${JWT_SECRET:-change_this_to_a_secure_random_value}
-      SERVICE_NAME: crud-express
+      SERVICE_NAME: shoppershala
       LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
       LOG_MAX_SIZE: ${LOG_MAX_SIZE:-20m}
     depends_on:

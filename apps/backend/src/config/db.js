@@ -3,7 +3,7 @@ import logger from '#utils/logger.js';
 import { MongoClient } from 'mongodb';
 
 let dbClient;
-const DB_NAME = process.env.DB_NAME || 'crud-express';
+const DB_NAME = process.env.DB_NAME || 'shoppershala';
 
 export const connectDb = async (uri) => {
   if (dbClient) {

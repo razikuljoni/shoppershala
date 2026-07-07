@@ -23,11 +23,11 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
       target: deps
-    command: pnpm --filter crud-express dev
+    command: pnpm --filter shoppershala dev
     environment:
       NODE_ENV: development
       MONGODB_URI: mongodb://mongodb:27017
-      DB_NAME: crud-express
+      DB_NAME: shoppershala
       JWT_SECRET: dev-secret-do-not-use-in-production
     volumes:
       - ./apps/backend/src:/app/apps/backend/src

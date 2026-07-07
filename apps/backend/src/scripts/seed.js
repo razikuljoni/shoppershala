@@ -13,7 +13,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const MONGODB_URI =
   process.env.MONGODB_URI ||
-  'mongodb://admin:changeme123@localhost:27017/crud-express?authSource=admin';
+  'mongodb://admin:changeme123@localhost:27017/shoppershala?authSource=admin';
 
 const seed = async () => {
   try {

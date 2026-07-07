@@ -11,7 +11,7 @@ const LOG_DIR = path.resolve(process.cwd(), 'logs');
 if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 const ENV = process.env.NODE_ENV || 'development';
-const SERVICE = process.env.SERVICE_NAME || 'crud-express';
+const SERVICE = process.env.SERVICE_NAME || 'shoppershala';
 const HOSTNAME = os.hostname();
 const PID = process.pid;
 
