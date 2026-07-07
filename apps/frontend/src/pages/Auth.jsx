@@ -34,16 +34,14 @@ export default function Auth({ onLogin: onLoginProp }) {
             username: value.username,
             password: value.password,
           });
-          const { token, user } = res.data;
-          localStorage.setItem('token', token);
+          const { user } = res.data;
           const userData = { ...user };
           await login(userData);
           onLoginProp?.(userData);
         } else {
           if (!value.name.trim()) return;
           const res = await registerMutation.mutateAsync(value);
-          const { token, user: regUser } = res.data;
-          localStorage.setItem('token', token);
+          const { user: regUser } = res.data;
           await login(regUser);
           onLoginProp?.(regUser);
         }

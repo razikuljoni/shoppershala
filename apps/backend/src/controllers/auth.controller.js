@@ -3,6 +3,14 @@ import * as authService from '#services/auth.service.js';
 import { verifyToken } from '#utils/jwt.util.js';
 import logger from '#utils/logger.js';
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 24 * 60 * 60 * 1000,
+  path: '/',
+};
+
 export const register = asyncHandler(async (req, res) => {
   const result = await authService.registerUser(req.body);
 
@@ -12,10 +20,12 @@ export const register = asyncHandler(async (req, res) => {
     role: result.role,
   });
 
+  res.cookie('token', result.token, COOKIE_OPTIONS);
+
   res.status(201).json({
     message: 'User registered successfully',
     status: 'ok',
-    data: result,
+    data: { user: result.user },
   });
 });
 
@@ -38,23 +48,26 @@ export const login = asyncHandler(async (req, res) => {
     role: result.user.role,
   });
 
+  res.cookie('token', result.token, COOKIE_OPTIONS);
+
   res.json({
     message: 'Login successful',
     status: 'ok',
-    data: {
-      token: result.token,
-      user: result.user,
-    },
+    data: { user: result.user },
   });
 });
 
+export const logout = asyncHandler(async (_req, res) => {
+  res.clearCookie('token', { path: '/' });
+  res.json({ message: 'Logged out', status: 'ok' });
+});
+
 export const whoAmI = asyncHandler(async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authorization header missing or malformed' });
+  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Not authenticated' });
   }
 
-  const token = authHeader.split(' ')[1];
   const decoded = verifyToken(token);
 
   logger.debug('Token decoded', {

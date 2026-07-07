@@ -25,6 +25,10 @@ function addToast(msg, type = 'info') {
   else toast.info(msg);
 }
 
+async function handleLoginImpl(user) {
+  await useAuthStore.getState().login(user);
+}
+
 /* ---------------------------------------------------------------
    Page transition wrapper
    --------------------------------------------------------------- */
@@ -110,12 +114,10 @@ function AppContent() {
     checkAuthToken();
   }, [checkAuthToken]);
 
-  const handleLogin = async (user) => {
-    await useAuthStore.getState().login(user);
-  };
+  const handleLogin = handleLoginImpl;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setCart({});
     toast.info('Logged out successfully');
   };

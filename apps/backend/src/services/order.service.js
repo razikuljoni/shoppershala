@@ -1,6 +1,7 @@
 import logger from '#utils/logger.js';
 import * as orderModel from '#models/order.model.js';
 import * as productModel from '#models/product.model.js';
+import * as userModel from '#models/user.model.js';
 import { ObjectId } from 'mongodb';
 
 export const createOrder = async (userId, orderData) => {
@@ -9,6 +10,11 @@ export const createOrder = async (userId, orderData) => {
   if (!items || items.length === 0) {
     logger.warn('Order creation failed — no items', { userId });
     throw new Error('Order must contain at least one item');
+  }
+
+  const user = await userModel.findUserById(userId);
+  if (!user) {
+    throw new Error('User not found');
   }
 
   let calculatedTotal = 0;
@@ -53,6 +59,18 @@ export const createOrder = async (userId, orderData) => {
       deducted: item.quantity,
       remaining: product.stock - item.quantity,
     });
+  }
+
+  const userBalance = user.balance || 0;
+  if (userBalance < calculatedTotal) {
+    logger.warn('Order creation failed — insufficient balance', {
+      userId,
+      balance: userBalance,
+      required: calculatedTotal,
+    });
+    throw new Error(
+      `Insufficient wallet balance. Required: $${calculatedTotal.toFixed(2)}, Available: $${userBalance.toFixed(2)}`,
+    );
   }
 
   const orderWithMeta = {

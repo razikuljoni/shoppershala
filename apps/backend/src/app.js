@@ -8,6 +8,7 @@ import reviewRoutes from '#routes/review.routes.js';
 import userRoutes from '#routes/user.routes.js';
 import wishlistRoutes from '#routes/wishlist.routes.js';
 import logger, { httpLogger } from '#utils/logger.js';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -18,7 +19,13 @@ dotenv.config();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+  }),
+);
 
 // Assign unique ID to every request (for log correlation)
 app.use(requestId);

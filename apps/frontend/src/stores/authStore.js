@@ -40,11 +40,6 @@ const useAuthStore = create((set) => ({
   },
 
   checkAuthToken: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      set({ authLoading: false });
-      return [];
-    }
     try {
       const res = await api.auth.whoami();
       const base = {
@@ -71,7 +66,6 @@ const useAuthStore = create((set) => ({
       }
       return wishlistIds;
     } catch {
-      localStorage.removeItem('token');
       set({ currentUser: null });
       return [];
     } finally {
@@ -79,8 +73,12 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
+  logout: async () => {
+    try {
+      await api.auth.logout();
+    } catch {
+      void 0;
+    }
     set({ currentUser: null });
     useWishlistStore.getState().clear();
   },

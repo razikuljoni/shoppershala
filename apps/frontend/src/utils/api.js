@@ -6,22 +6,15 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (config) => config,
+  (error) => Promise.reject(error),
 );
 
 axiosInstance.interceptors.response.use(
@@ -74,6 +67,7 @@ export const api = {
         body: JSON.stringify(userData),
       }),
     whoami: () => request('/auth/whoami'),
+    logout: () => request('/auth/logout', { method: 'POST' }),
   },
 
   // Products

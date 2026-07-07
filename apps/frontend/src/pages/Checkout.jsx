@@ -101,6 +101,7 @@ export default function Checkout() {
   const cart = useCartStore((s) => s.cart);
   const clearCart = useCartStore((s) => s.clearCart);
   const [success, setSuccess] = useState(false);
+  const [orderSummary, setOrderSummary] = useState(null);
 
   const createOrderMutation = useCreateOrder();
   const updateUserMutation = useUpdateUser({ successMessage: null });
@@ -146,10 +147,11 @@ export default function Checkout() {
         const newBalance = balance - subtotal;
         await updateUserMutation.mutateAsync({
           id: currentUser.id,
-          userData: { balance: newBalance },
+          userData: { balance: Math.max(0, newBalance) },
         });
-        updateUser({ balance: newBalance });
+        updateUser({ balance: Math.max(0, newBalance) });
 
+        setOrderSummary({ total: subtotal, newBalance: Math.max(0, newBalance) });
         clearCart();
         setSuccess(true);
       } catch {
@@ -178,9 +180,9 @@ export default function Checkout() {
             Order Placed!
           </h2>
           <p className="text-sm text-(--color-muted-foreground) mt-2">
-            Your order for <strong>${subtotal.toFixed(2)}</strong> has been confirmed.
+            Your order for <strong>${orderSummary.total.toFixed(2)}</strong> has been confirmed.
             <br />
-            New wallet balance: <strong>${(balance - subtotal).toFixed(2)}</strong>
+            New wallet balance: <strong>${orderSummary.newBalance.toFixed(2)}</strong>
           </p>
         </div>
         <div className="flex gap-3">
