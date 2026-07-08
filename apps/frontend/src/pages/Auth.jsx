@@ -186,6 +186,7 @@ export default function Auth({ onLogin: onLoginProp }) {
                         />
                         <button
                           type="button"
+                          aria-label={showPass ? 'Hide password' : 'Show password'}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-muted-foreground) hover:text-(--color-foreground) transition-colors"
                           onClick={() => setShowPass((v) => !v)}
                         >
