@@ -76,7 +76,7 @@ export default function Cart() {
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
+                exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
                 <Card className="overflow-hidden">
@@ -112,6 +112,7 @@ export default function Cart() {
                           <div className="flex items-center border border-(--color-border) rounded-lg overflow-hidden">
                             <button
                               type="button"
+                              aria-label="Decrease quantity"
                               className="px-2.5 py-1.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-[rgba(255,255,255,0.04)] transition-colors"
                               onClick={() => updateCartQuantity(product._id, quantity - 1)}
                             >
@@ -122,6 +123,7 @@ export default function Cart() {
                             </span>
                             <button
                               type="button"
+                              aria-label="Increase quantity"
                               className="px-2.5 py-1.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-[rgba(255,255,255,0.04)] transition-colors"
                               onClick={() => updateCartQuantity(product._id, quantity + 1)}
                             >
@@ -135,6 +137,7 @@ export default function Cart() {
                             </span>
                             <button
                               type="button"
+                              aria-label="Remove item"
                               className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
                               onClick={() => removeFromCart(product._id)}
                             >

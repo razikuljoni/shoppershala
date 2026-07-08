@@ -1,0 +1,86 @@
+{
+  "rulebook_version": 1,
+  "name": "project-rules",
+  "version": "1.0.0",
+  "description": "Shoppershala project-specific CC Safety Net rules. Blocks destructive Docker, filesystem, and git operations.",
+  "author": "project",
+  "allowed_commands": ["docker", "rm", "chmod", "git"],
+  "rules": [
+    {
+      "name": "block-docker-destructive",
+      "command": "docker",
+      "subcommand": "compose",
+      "block_args": ["-v", "--rmi"],
+      "reason": "Use 'docker compose down' without flags, or 'docker compose down --volumes' only after confirming data backup."
+    },
+    {
+      "name": "block-rm-recursive-force",
+      "command": "rm",
+      "block_args": ["-rf", "-fr", "-rfv", "-rvf", "-fvr", "-vfr"],
+      "reason": "Use 'rm' on specific files only. For directory cleanup, verify contents first."
+    },
+    {
+      "name": "block-chmod-recursive",
+      "command": "chmod",
+      "block_args": ["-R", "--recursive"],
+      "reason": "Use targeted chmod on specific files. Recursive permission changes can break the project."
+    },
+    {
+      "name": "block-git-force-push",
+      "command": "git",
+      "subcommand": "push",
+      "block_args": ["--force", "-f"],
+      "reason": "Use 'git push' without --force. If force push is necessary, use '--force-with-lease' with explicit justification."
+    }
+  ],
+  "tests": [
+    {
+      "command": "docker compose down -v --rmi local",
+      "expect": "blocked",
+      "rule": "block-docker-destructive"
+    },
+    {
+      "command": "docker compose down",
+      "expect": "allowed"
+    },
+    {
+      "command": "docker compose up -d",
+      "expect": "allowed"
+    },
+    {
+      "command": "rm -rf node_modules",
+      "expect": "blocked",
+      "rule": "block-rm-recursive-force"
+    },
+    {
+      "command": "rm package-lock.json",
+      "expect": "allowed"
+    },
+    {
+      "command": "rm -f tmpfile",
+      "expect": "allowed"
+    },
+    {
+      "command": "chmod -R 755 src",
+      "expect": "blocked",
+      "rule": "block-chmod-recursive"
+    },
+    {
+      "command": "chmod +x script.sh",
+      "expect": "allowed"
+    },
+    {
+      "command": "git push origin main --force",
+      "expect": "blocked",
+      "rule": "block-git-force-push"
+    },
+    {
+      "command": "git push origin main",
+      "expect": "allowed"
+    },
+    {
+      "command": "git push --force-with-lease origin main",
+      "expect": "allowed"
+    }
+  ]
+}

@@ -193,24 +193,6 @@ export const useCreateReview = (productId) => {
 };
 
 /* ------------------------------------------------------------------
-   Wishlist Hooks
-   ------------------------------------------------------------------ */
-
-export const useAddToWishlist = () => {
-  return useNotifyMutation((productId) => api.wishlist.add(productId), {
-    successMessage: 'Added to wishlist',
-    invalidateKeys: [['wishlist']],
-  });
-};
-
-export const useRemoveFromWishlist = () => {
-  return useNotifyMutation((productId) => api.wishlist.remove(productId), {
-    successMessage: 'Removed from wishlist',
-    invalidateKeys: [['wishlist']],
-  });
-};
-
-/* ------------------------------------------------------------------
    Users Hooks
    ------------------------------------------------------------------ */
 
@@ -265,14 +247,6 @@ export const useShop = (id, options = {}) => {
   });
 };
 
-export const useShops = (page = 1, limit = 10, options = {}) => {
-  return useQuery({
-    queryKey: ['shops', { page, limit }],
-    queryFn: () => api.shops.getAll(page, limit),
-    ...options,
-  });
-};
-
 export const useCreateShop = () => {
   return useNotifyMutation((shopData) => api.shops.create(shopData), {
     successMessage: 'Shop created!',
@@ -284,13 +258,6 @@ export const useUpdateShop = () => {
   return useNotifyMutation(({ id, shopData }) => api.shops.update(id, shopData), {
     successMessage: 'Shop updated!',
     invalidateKeys: [['my-shop'], ['shop'], ['shops']],
-  });
-};
-
-export const useDeleteShop = () => {
-  return useNotifyMutation((id) => api.shops.delete(id), {
-    successMessage: 'Shop deleted',
-    invalidateKeys: [['my-shop'], ['shops']],
   });
 };
 

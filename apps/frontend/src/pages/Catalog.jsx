@@ -156,6 +156,7 @@ function ProductCard({ product, inCart, inWishlist, onAddToCart, onToggleWishlis
 
           <button
             type="button"
+            aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
               inWishlist
                 ? 'bg-[rgba(239,68,68,0.9)] text-white'
@@ -273,9 +274,10 @@ export default function Catalog({ wishlistOnly = false }) {
   const categories = categoriesQuery.data?.data || [];
   const total = productsQuery.data?.pagination?.total || 0;
   const totalPages = Math.ceil(total / LIMIT) || 1;
+  const wishlistSet = new Set(wishlist);
 
   let displayed = products;
-  if (wishlistOnly) displayed = products.filter((p) => wishlist.includes(p._id));
+  if (wishlistOnly) displayed = products.filter((p) => wishlistSet.has(p._id));
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     displayed = displayed.filter(
@@ -376,7 +378,7 @@ export default function Catalog({ wishlistOnly = false }) {
                 key={product._id}
                 product={product}
                 inCart={!!cart[product._id]}
-                inWishlist={wishlist.includes(product._id)}
+                inWishlist={wishlistSet.has(product._id)}
                 onAddToCart={addToCart}
                 onBuyNow={handleBuyNow}
                 onToggleWishlist={(id) => toggleWishlist(id, currentUser)}

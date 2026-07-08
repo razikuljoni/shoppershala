@@ -1,5 +1,5 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, HashRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 
@@ -9,14 +9,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import useAuthStore from '@/stores/authStore';
 import useWishlistStore from '@/stores/wishlistStore';
 
-import Auth from '@/pages/Auth';
-import Cart from '@/pages/Cart';
-import Catalog from '@/pages/Catalog';
-import Checkout from '@/pages/Checkout';
-import Dashboard from '@/pages/Dashboard';
-import ProductDetails from '@/pages/ProductDetails';
-import Profile from '@/pages/Profile';
-import ShopPage from '@/pages/ShopPage';
+/* Route-level code splitting — each page loads only when visited */
+const Auth = lazy(() => import('@/pages/Auth'));
+const Cart = lazy(() => import('@/pages/Cart'));
+const Catalog = lazy(() => import('@/pages/Catalog'));
+const Checkout = lazy(() => import('@/pages/Checkout'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const ProductDetails = lazy(() => import('@/pages/ProductDetails'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const ShopPage = lazy(() => import('@/pages/ShopPage'));
 
 /* addToast shim — delegate to Sonner */
 function addToast(msg, type = 'info') {
@@ -38,6 +39,18 @@ const pageVariants = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
   exit: { opacity: 0, y: -6, transition: { duration: 0.15 } },
 };
+
+/* Page-level loading fallback for route code-splitting */
+function RouteFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center gap-4">
+        <Skeleton className="w-12 h-12 rounded-xl" />
+        <p className="text-sm text-(--color-muted-foreground)">Loading…</p>
+      </div>
+    </div>
+  );
+}
 
 function PageTransition({ children }) {
   return (
@@ -305,10 +318,12 @@ function AppContent() {
     <LazyMotion features={domAnimation}>
       {isAuthPage ? (
         /* Auth page — full screen, no shell */
-        <div className="min-h-screen bg-background">{appContent}</div>
+        <div className="min-h-screen bg-background">
+          <Suspense fallback={<RouteFallback />}>{appContent}</Suspense>
+        </div>
       ) : (
         <AppShell currentUser={currentUser} cartItemCount={cartItemCount} onLogout={handleLogout}>
-          {appContent}
+          <Suspense fallback={<RouteFallback />}>{appContent}</Suspense>
         </AppShell>
       )}
 

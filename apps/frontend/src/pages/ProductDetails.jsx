@@ -53,6 +53,7 @@ function ClickableStars({ value, onChange }) {
         <button
           key={s}
           type="button"
+          aria-label={`Rate ${s} star${s !== 1 ? 's' : ''}`}
           onClick={() => onChange(s)}
           onMouseEnter={() => setHovered(s)}
           onMouseLeave={() => setHovered(0)}
@@ -209,6 +210,7 @@ function ProductInfo({
           <div className="flex items-center border border-border rounded-lg overflow-hidden">
             <button
               type="button"
+              aria-label="Decrease quantity"
               className="px-3 py-2 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-[rgba(255,255,255,0.04)] transition-colors"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             >
@@ -219,6 +221,7 @@ function ProductInfo({
             </span>
             <button
               type="button"
+              aria-label="Increase quantity"
               className="px-3 py-2 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-[rgba(255,255,255,0.04)] transition-colors"
               onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
             >

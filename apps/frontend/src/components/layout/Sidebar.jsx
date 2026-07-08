@@ -87,6 +87,7 @@ export default function Sidebar({ currentUser, cartItemCount, onLogout, open, on
           {/* Mobile close button */}
           <button
             type="button"
+            aria-label="Close sidebar"
             className="ml-auto lg:hidden p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-border transition-colors"
             onClick={onClose}
           >
