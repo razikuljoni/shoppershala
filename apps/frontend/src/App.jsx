@@ -16,6 +16,7 @@ import Checkout from '@/pages/Checkout';
 import Dashboard from '@/pages/Dashboard';
 import ProductDetails from '@/pages/ProductDetails';
 import Profile from '@/pages/Profile';
+import ShopPage from '@/pages/ShopPage';
 
 /* addToast shim — delegate to Sonner */
 function addToast(msg, type = 'info') {
@@ -281,6 +282,17 @@ function AppContent() {
                 <Dashboard currentUser={currentUser} addToast={addToast} />
               </PageTransition>
             </RequireSeller>
+          }
+        />
+
+        <Route
+          path="/shop/:id"
+          element={
+            <RequireAuth currentUser={currentUser}>
+              <PageTransition>
+                <ShopPage />
+              </PageTransition>
+            </RequireAuth>
           }
         />
 

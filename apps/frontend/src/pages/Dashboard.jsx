@@ -1,22 +1,48 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useAnalyticsDashboard,
+  useBanners,
   useCategories,
+  useCreateBanner,
   useCreateCategory,
   useCreateProduct,
+  useCreateShop,
+  useDeleteBanner,
   useDeleteCategory,
   useDeleteProduct,
   useDeleteUser,
+  useMyShop,
+  useOrders,
   useProducts,
+  useUpdateBanner,
+  useUpdateOrder,
   useUpdateProduct,
+  useUpdateShop,
   useUpdateUserRole,
   useUsers,
 } from '@/hooks/useApi';
@@ -26,18 +52,36 @@ import {
   BarChart3,
   DollarSign,
   Edit,
+  Image,
   Layers,
   Package,
   Percent,
   Plus,
   Save,
   ShoppingCart,
+  Store,
   Trash2,
   TrendingUp,
   Users2,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import ShopPanel from '../components/management-portal/shop';
 
 const MONTH_NAMES = [
   'Jan',
@@ -87,96 +131,146 @@ function StatCard({
 }
 
 /* ---------------------------------------------------------------
-   Revenue Bar Chart (SVG)
+   Revenue Area Chart (Recharts)
    --------------------------------------------------------------- */
+const CHART_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'];
+
 function TrendChart({ monthlySalesTrend }) {
-  if (!monthlySalesTrend?.length) {
+  if (!Array.isArray(monthlySalesTrend) || monthlySalesTrend.length === 0) {
     return (
       <p className="text-sm text-(--color-muted-foreground) text-center py-8">
         No sales trend data yet.
       </p>
     );
   }
-  const monthly = Array.from({ length: 12 }).map((_, i) => {
+  const data = Array.from({ length: 12 }).map((_, i) => {
     const m = monthlySalesTrend.find((t) => t.month === i + 1);
-    return m ? m.revenue : 0;
+    return { name: MONTH_NAMES[i], revenue: m ? m.revenue : 0 };
   });
-  const maxVal = Math.max(...monthly, 100);
-  const W = 600;
-  const H = 160;
-  const barW = 34;
-  const gap = 16;
-  const padL = 44;
 
   return (
-    <div className="w-full overflow-x-auto">
-      <svg
-        viewBox={`0 0 ${W} ${H + 40}`}
-        className="w-full min-w-120"
-        style={{ fontFamily: 'var(--font-sans)' }}
-      >
-        <defs>
-          <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(243 75% 65%)" />
-            <stop offset="100%" stopColor="hsl(243 75% 45%)" stopOpacity="0.5" />
-          </linearGradient>
-        </defs>
-        {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
-          const y = H * (1 - r) + 4;
-          return (
-            <g key={i}>
-              <line
-                x1={padL}
-                y1={y}
-                x2={W - 8}
-                y2={y}
-                stroke="rgba(255,255,255,0.05)"
-                strokeDasharray="4"
-              />
-              <text
-                x={padL - 6}
-                y={y + 4}
-                fill="rgba(148,163,184,0.7)"
-                fontSize="9"
-                textAnchor="end"
-              >
-                ${(maxVal * r).toFixed(0)}
-              </text>
-            </g>
-          );
-        })}
-        {monthly.map((val, idx) => {
-          const x = padL + idx * (barW + gap) + 4;
-          const bH = Math.max(val > 0 ? (val / maxVal) * H : 3, 3);
-          const y = H - bH + 4;
-          return (
-            <g key={idx}>
-              <rect x={x} y={y} width={barW} height={bH} rx="4" fill="url(#barGrad)" />
-              {val > 0 && (
-                <text
-                  x={x + barW / 2}
-                  y={y - 4}
-                  fill="rgba(248,250,252,0.8)"
-                  fontSize="8"
-                  fontWeight="700"
-                  textAnchor="middle"
-                >
-                  ${val.toFixed(0)}
-                </text>
-              )}
-              <text
-                x={x + barW / 2}
-                y={H + 22}
-                fill="rgba(148,163,184,0.8)"
-                fontSize="9"
-                textAnchor="middle"
-              >
-                {MONTH_NAMES[idx]}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+    <div className="w-full h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+          <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.8)' }} />
+          <YAxis tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.8)' }} />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'rgba(15,23,42,0.95)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: '#f8fafc',
+            }}
+            formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']}
+          />
+          <Area
+            type="monotone"
+            dataKey="revenue"
+            stroke="#6366f1"
+            strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorRevenue)"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Category Sales Pie Chart (Recharts)
+   --------------------------------------------------------------- */
+function CategoryPieChart({ categorySales }) {
+  if (!Array.isArray(categorySales) || categorySales.length === 0) {
+    return (
+      <p className="text-sm text-(--color-muted-foreground) text-center py-6">No category data.</p>
+    );
+  }
+  const data = categorySales.map((cat) => ({
+    name: cat.categoryName,
+    value: cat.revenue,
+  }));
+
+  return (
+    <div className="w-full h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={50}
+            outerRadius={90}
+            paddingAngle={3}
+            dataKey="value"
+            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          >
+            {data.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'rgba(15,23,42,0.95)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: '#f8fafc',
+            }}
+            formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']}
+          />
+          <Legend wrapperStyle={{ fontSize: '11px', color: 'rgba(148,163,184,0.8)' }} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Top Products Bar Chart (Recharts)
+   --------------------------------------------------------------- */
+function TopProductsBarChart({ topProducts }) {
+  if (!Array.isArray(topProducts) || topProducts.length === 0) {
+    return <p className="text-sm text-(--color-muted-foreground)">No orders placed yet.</p>;
+  }
+  const data = topProducts.map((p) => ({
+    name: p.name.length > 15 ? p.name.slice(0, 15) + '…' : p.name,
+    revenue: p.revenue,
+    sold: p.totalSold,
+  }));
+
+  return (
+    <div className="w-full h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+          <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(148,163,184,0.8)' }} />
+          <YAxis tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.8)' }} />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'rgba(15,23,42,0.95)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: '#f8fafc',
+            }}
+            formatter={(value, name) => [
+              name === 'revenue' ? `$${value.toFixed(2)}` : value,
+              name === 'revenue' ? 'Revenue' : 'Units Sold',
+            ]}
+          />
+          <Bar dataKey="revenue" fill="#6366f1" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="sold" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -272,19 +366,18 @@ function ProductForm({ categories, onSubmit, onCancel, isEdit, initialValues }) 
         {(field) => (
           <div className="space-y-1.5">
             <Label>Category</Label>
-            <select
-              className="input-base h-10 px-3"
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              required
-            >
-              <option value="">Choose Category</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <Select value={field.state.value} onValueChange={(val) => field.handleChange(val)}>
+              <SelectTrigger className="w-full" size="lg">
+                <SelectValue placeholder="Choose Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c._id} value={c._id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </form.Field>
@@ -368,7 +461,7 @@ function AnalyticsPanel({ analytics, analyticsLoading }) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm">
                   <TrendingUp size={15} className="text-(--color-primary)" />
-                  Monthly Revenue
+                  Monthly Revenue Trend
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -383,29 +476,11 @@ function AnalyticsPanel({ analytics, analyticsLoading }) {
                   Sales by Category
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {!analytics?.categorySales?.length ? (
-                  <p className="text-sm text-(--color-muted-foreground) text-center py-6">
-                    No category data.
-                  </p>
-                ) : (
-                  analytics.categorySales.map((cat) => {
-                    const pct = (cat.revenue / (analytics.salesAnalytics?.totalRevenue || 1)) * 100;
-                    return (
-                      <div key={cat._id} className="space-y-1.5">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium text-(--color-foreground)">
-                            {cat.categoryName}
-                          </span>
-                          <span className="text-(--color-muted-foreground)">
-                            ${cat.revenue.toFixed(2)} ({pct.toFixed(1)}%)
-                          </span>
-                        </div>
-                        <Progress value={pct} />
-                      </div>
-                    );
-                  })
-                )}
+              <CardContent>
+                <CategoryPieChart
+                  categorySales={analytics?.categorySales}
+                  totalRevenue={analytics?.salesAnalytics?.totalRevenue}
+                />
               </CardContent>
             </Card>
           </div>
@@ -418,35 +493,7 @@ function AnalyticsPanel({ analytics, analyticsLoading }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {!analytics?.topProducts?.length ? (
-                <p className="text-sm text-(--color-muted-foreground)">No orders placed yet.</p>
-              ) : (
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Units</th>
-                      <th>Revenue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {analytics.topProducts.map((p, i) => (
-                      <tr key={p.productId}>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <span className="w-6 h-6 rounded-full bg-[rgba(99,102,241,0.15)] text-[hsl(243_75%_78%)] text-[10px] font-bold flex items-center justify-center shrink-0">
-                              {i + 1}
-                            </span>
-                            <span className="font-medium">{p.name}</span>
-                          </div>
-                        </td>
-                        <td>{p.totalSold} units</td>
-                        <td className="font-bold">${p.revenue.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+              <TopProductsBarChart topProducts={analytics?.topProducts} />
             </CardContent>
           </Card>
         </>
@@ -587,13 +634,34 @@ function InventoryPanel({
                               >
                                 <Edit size={13} />
                               </button>
-                              <button
-                                type="button"
-                                className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
-                                onClick={() => onDeleteProduct(p._id)}
-                              >
-                                <Trash2 size={13} />
-                              </button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete this product? This action
+                                      cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-white hover:bg-destructive/90"
+                                      onClick={() => onDeleteProduct(p._id)}
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </td>
                         </tr>
@@ -713,13 +781,34 @@ function CategoriesPanel({ categories, catForm, onDeleteCategory }) {
                     </td>
                     <td>
                       <div className="flex justify-end">
-                        <button
-                          type="button"
-                          className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
-                          onClick={() => onDeleteCategory(c._id)}
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              type="button"
+                              className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this category? This action cannot be
+                                undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-white hover:bg-destructive/90"
+                                onClick={() => onDeleteCategory(c._id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </td>
                   </tr>
@@ -777,28 +866,53 @@ function UsersPanel({ users, usersLoading, currentUser, onRoleChange, onDeleteUs
                       </td>
                       <td className="text-(--color-muted-foreground)">@{u.username}</td>
                       <td>
-                        <select
+                        <Select
                           value={u.role}
-                          onChange={(e) => onRoleChange(u._id, e.target.value)}
-                          className="input-base h-7 px-2 text-xs"
+                          onValueChange={(val) => onRoleChange(u._id, val)}
                           disabled={u._id === currentUser.id}
                         >
-                          <option value="Buyer">Buyer</option>
-                          <option value="Seller">Seller</option>
-                          <option value="Admin">Admin</option>
-                        </select>
+                          <SelectTrigger className="h-7 w-28" size="sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Buyer">Buyer</SelectItem>
+                            <SelectItem value="Seller">Seller</SelectItem>
+                            <SelectItem value="Admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </td>
                       <td>${(u.balance || 0).toFixed(2)}</td>
                       <td>
                         <div className="flex justify-end">
-                          <button
-                            type="button"
-                            className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors disabled:opacity-30"
-                            onClick={() => onDeleteUser(u._id)}
-                            disabled={u._id === currentUser.id}
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors disabled:opacity-30"
+                                disabled={u._id === currentUser.id}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this user? This action cannot be
+                                  undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-white hover:bg-destructive/90"
+                                  onClick={() => onDeleteUser(u._id)}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </td>
                     </tr>
@@ -810,6 +924,395 @@ function UsersPanel({ users, usersLoading, currentUser, onRoleChange, onDeleteUs
         </CardContent>
       </Card>
     </TabsContent>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Orders Tab Panel (Admin)
+   --------------------------------------------------------------- */
+function OrdersPanel({ ordersQuery, updateOrderMutation }) {
+  const orders = ordersQuery.data?.data || [];
+  const ordersLoading = ordersQuery.isLoading;
+
+  const statusOrder = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+  const statusColors = {
+    pending: 'bg-amber/15 text-amber',
+    confirmed: 'bg-primary/15 text-primary',
+    shipped: 'bg-[rgba(99,102,241,0.15)] text-[hsl(243_75%_78%)]',
+    delivered: 'bg-success/15 text-success',
+    cancelled: 'bg-destructive/15 text-destructive',
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await updateOrderMutation.mutateAsync({ id: orderId, updateData: { status: newStatus } });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <TabsContent value="orders">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Order Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {ordersLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-14 w-full" />
+              ))}
+            </div>
+          ) : orders.length === 0 ? (
+            <p className="text-sm text-(--color-muted-foreground) text-center py-8">
+              No orders yet.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order._id}>
+                      <td>
+                        <span className="text-xs font-mono text-(--color-muted-foreground)">
+                          #{order._id.slice(-8).toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="text-sm text-(--color-foreground) font-medium">
+                        {order.userId?.slice(-8) || '—'}
+                      </td>
+                      <td className="text-sm">{order.items?.length || 0}</td>
+                      <td className="text-sm font-bold">${(order.totalAmount || 0).toFixed(2)}</td>
+                      <td>
+                        <Badge
+                          className={`${statusColors[order.status] || 'bg-muted text-muted-foreground'}`}
+                        >
+                          {order.status}
+                        </Badge>
+                      </td>
+                      <td className="text-xs text-(--color-muted-foreground)">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '—'}
+                      </td>
+                      <td>
+                        <div className="flex justify-end">
+                          <Select
+                            value={order.status}
+                            onValueChange={(val) => handleStatusChange(order._id, val)}
+                          >
+                            <SelectTrigger className="h-8 w-28">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statusOrder.map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </TabsContent>
+  );
+}
+
+/* ---------------------------------------------------------------
+   Banners Tab Panel (Admin)
+   --------------------------------------------------------------- */
+function BannerPanel({
+  bannersQuery,
+  createBannerMutation,
+  updateBannerMutation,
+  deleteBannerMutation,
+}) {
+  const bannersData = bannersQuery.data?.data || [];
+  const bannersLoading = bannersQuery.isLoading;
+
+  const handleDeleteBanner = async (id) => {
+    try {
+      await deleteBannerMutation.mutateAsync(id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleActive = async (banner) => {
+    try {
+      await updateBannerMutation.mutateAsync({
+        id: banner._id,
+        bannerData: { active: !banner.active },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <TabsContent value="banners">
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Plus size={15} /> Add Banner
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BannerForm
+              onSubmit={async (val) => {
+                await createBannerMutation.mutateAsync(val);
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Banners</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {bannersLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
+                ))}
+              </div>
+            ) : bannersData.length === 0 ? (
+              <p className="text-sm text-(--color-muted-foreground) text-center py-8">
+                No banners yet.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Preview</th>
+                      <th>Title</th>
+                      <th>Order</th>
+                      <th>Active</th>
+                      <th className="text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bannersData.map((b) => (
+                      <tr key={b._id}>
+                        <td>
+                          {b.imageUrl ? (
+                            <img
+                              src={b.imageUrl}
+                              alt=""
+                              className="w-12 h-8 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-8 rounded bg-[rgba(255,255,255,0.04)] flex items-center justify-center">
+                              <Image size={12} className="text-(--color-muted-foreground)" />
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <span className="font-medium text-sm">{b.title}</span>
+                          {b.subtitle && (
+                            <p className="text-[10px] text-(--color-muted-foreground)">
+                              {b.subtitle}
+                            </p>
+                          )}
+                        </td>
+                        <td className="text-sm">{b.order || 0}</td>
+                        <td>
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleActive(b)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                b.active
+                                  ? 'text-success hover:bg-[rgba(16,185,129,0.15)]'
+                                  : 'text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-border'
+                              }`}
+                            >
+                              <Badge variant={b.active ? 'success' : 'secondary'}>
+                                {b.active ? 'ON' : 'OFF'}
+                              </Badge>
+                            </button>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="flex justify-end">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Banner</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this banner? This action cannot
+                                    be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-white hover:bg-destructive/90"
+                                    onClick={() => handleDeleteBanner(b._id)}
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </TabsContent>
+  );
+}
+
+/* Banner Form sub-component */
+function BannerForm({ onSubmit, initialValues }) {
+  const form = useForm({
+    defaultValues: initialValues || {
+      title: '',
+      subtitle: '',
+      imageUrl: '',
+      link: '',
+      linkText: '',
+      order: '',
+    },
+    onSubmit: async ({ value }) => {
+      await onSubmit({
+        title: value.title,
+        subtitle: value.subtitle || undefined,
+        imageUrl: value.imageUrl,
+        link: value.link || undefined,
+        linkText: value.linkText || undefined,
+        order: value.order ? parseInt(value.order) : 0,
+        active: true,
+      });
+      form.reset();
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      className="space-y-3"
+    >
+      <form.Field name="title">
+        {(field) => (
+          <div className="space-y-1.5">
+            <Label>Title *</Label>
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Summer Sale"
+              required
+            />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="subtitle">
+        {(field) => (
+          <div className="space-y-1.5">
+            <Label>Subtitle</Label>
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Up to 50% off"
+            />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="imageUrl">
+        {(field) => (
+          <div className="space-y-1.5">
+            <Label>Image URL *</Label>
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="https://…"
+              required
+            />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="link">
+        {(field) => (
+          <div className="space-y-1.5">
+            <Label>Link URL</Label>
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="/products"
+            />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="linkText">
+        {(field) => (
+          <div className="space-y-1.5">
+            <Label>Link Text</Label>
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Shop Now"
+            />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="order">
+        {(field) => (
+          <div className="space-y-1.5">
+            <Label>Display Order</Label>
+            <Input
+              type="number"
+              min="0"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="1"
+            />
+          </div>
+        )}
+      </form.Field>
+      <Button type="submit" size="sm" className="w-full">
+        <Plus size={14} /> Add Banner
+      </Button>
+    </form>
   );
 }
 
@@ -827,6 +1330,13 @@ export default function Dashboard() {
   const analyticsQuery = useAnalyticsDashboard({ enabled: activeTab === 'analytics' });
   const productsQuery = useProducts(productsPage, 8, '', { enabled: activeTab === 'inventory' });
   const usersQuery = useUsers({ enabled: activeTab === 'users' && currentUser?.role === 'admin' });
+  const myShopQuery = useMyShop({ enabled: activeTab === 'shop', retry: false });
+  const ordersQuery = useOrders(1, 20, '', {
+    enabled: activeTab === 'orders' && currentUser?.role === 'admin',
+  });
+  const bannersQuery = useBanners(1, 50, {
+    enabled: activeTab === 'banners' && currentUser?.role === 'admin',
+  });
 
   // Mutations
   const createProductMutation = useCreateProduct();
@@ -836,6 +1346,12 @@ export default function Dashboard() {
   const deleteCategoryMutation = useDeleteCategory();
   const updateUserRoleMutation = useUpdateUserRole();
   const deleteUserMutation = useDeleteUser();
+  const createShopMutation = useCreateShop();
+  const updateShopMutation = useUpdateShop();
+  const updateOrderMutation = useUpdateOrder();
+  const createBannerMutation = useCreateBanner();
+  const updateBannerMutation = useUpdateBanner();
+  const deleteBannerMutation = useDeleteBanner();
 
   // Category form
   const catForm = useForm({
@@ -898,7 +1414,6 @@ export default function Dashboard() {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm('Delete this product?')) return;
     try {
       await deleteProductMutation.mutateAsync(id);
     } catch (err) {
@@ -907,7 +1422,6 @@ export default function Dashboard() {
   };
 
   const handleDeleteCategory = async (id) => {
-    if (!window.confirm('Delete this category?')) return;
     try {
       await deleteCategoryMutation.mutateAsync(id);
     } catch (err) {
@@ -924,7 +1438,6 @@ export default function Dashboard() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Delete this user?')) return;
     try {
       await deleteUserMutation.mutateAsync(userId);
     } catch (err) {
@@ -960,10 +1473,28 @@ export default function Dashboard() {
             <Layers size={14} className="mr-1.5" />
             Categories
           </TabsTrigger>
+          {['seller', 'admin'].includes(currentUser?.role) && (
+            <TabsTrigger value="shop">
+              <Store size={14} className="mr-1.5" />
+              Shop
+            </TabsTrigger>
+          )}
           {currentUser?.role === 'admin' && (
             <TabsTrigger value="users">
               <Users2 size={14} className="mr-1.5" />
               Users
+            </TabsTrigger>
+          )}
+          {currentUser?.role === 'admin' && (
+            <TabsTrigger value="orders">
+              <ShoppingCart size={14} className="mr-1.5" />
+              Orders
+            </TabsTrigger>
+          )}
+          {currentUser?.role === 'admin' && (
+            <TabsTrigger value="banners">
+              <Image size={14} className="mr-1.5" />
+              Banners
             </TabsTrigger>
           )}
         </TabsList>
@@ -1000,6 +1531,25 @@ export default function Dashboard() {
             onDeleteUser={handleDeleteUser}
           />
         )}
+
+        {currentUser?.role === 'admin' && (
+          <OrdersPanel ordersQuery={ordersQuery} updateOrderMutation={updateOrderMutation} />
+        )}
+
+        {currentUser?.role === 'admin' && (
+          <BannerPanel
+            bannersQuery={bannersQuery}
+            createBannerMutation={createBannerMutation}
+            updateBannerMutation={updateBannerMutation}
+            deleteBannerMutation={deleteBannerMutation}
+          />
+        )}
+
+        <ShopPanel
+          shopQuery={myShopQuery}
+          createShopMutation={createShopMutation}
+          updateShopMutation={updateShopMutation}
+        />
       </Tabs>
     </div>
   );

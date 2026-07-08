@@ -22,3 +22,16 @@ export const authenticate = async (req, res, next) => {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
+
+export const authorizeAdmin = async (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    logger.warn('Admin authorization denied', {
+      username: req.user?.username,
+      role: req.user?.role,
+      requestId: req.id,
+      url: req.originalUrl,
+    });
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};

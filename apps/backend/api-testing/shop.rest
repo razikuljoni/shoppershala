@@ -1,0 +1,85 @@
+### Shop API Tests
+### Base URL: http://localhost:3000/api/v1
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1/shops
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTJiMDk1ODJhYjhiYTUzNzY1MjlkZDMiLCJuYW1lIjoiU2VsbGVyIFVzZXIiLCJ1c2VybmFtZSI6InNlbGxlciIsInJvbGUiOiJzZWxsZXIiLCJiYWxhbmNlIjo1MDAsImlhdCI6MTc4MzUxMzUxNSwiZXhwIjoxNzgzNTk5OTE1fQ.altY9oUHENxnj-WxMGNTWiQWkjsZYsAWOlaQJowJgI8
+
+###
+### 1. Create a new shop
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+       "name": "Tech Hub",
+      "description": "This is the biggest tech store in the city",
+      "logo": "https://www.magnific.com/free-photos-vectors/technology-store-logo",
+      "banner": "https://plus.unsplash.com/premium_photo-1681487827495-26b20ee57367?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "contactEmail": "contact@techohub.com",
+      "contactPhone": "9876543210"
+}
+
+###
+### 2. Get all shops (default pagination)
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+###
+### 3. Get all shops with custom pagination
+GET {{baseUrl}}/?page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+### 4. Get shop by ID
+# Replace with actual shop ID from response
+GET {{baseUrl}}/6a4e41d220d7e335ecb11cf6
+Authorization: Bearer {{token}}
+
+###
+### 5. Update shop by ID
+PATCH {{baseUrl}}/65d1f85e8c9b4a1d2e3f4a04
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Fashion Hub Updated",
+    "description": "Updated fashion destination",
+    "contactPhone": "9876543211"
+}
+
+###
+### 6. Delete shop by ID
+DELETE {{baseUrl}}/65d1f85e8c9b4a1d2e3f4a04
+Authorization: Bearer {{token}}
+
+###
+### 7. Create shop - Missing name (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "No shop name",
+    "address": "456 Oak Avenue, City",
+    "contactPhone": "9876543212",
+    "category": "Electronics"
+}
+
+###
+### 8. Create shop - Invalid phone (should fail with 400)
+POST {{baseUrl}}/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Tech Store",
+    "description": "Electronics shop",
+    "address": "789 Pine Road, City",
+    "phoneNumber": "123",
+    "category": "Electronics"
+}
+
+###
+### 9. Access shop without token (should fail with 401)
+GET {{baseUrl}}/

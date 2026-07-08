@@ -12,9 +12,21 @@ import useCartStore from '@/stores/cartStore';
 import useWishlistStore from '@/stores/wishlistStore';
 import { useForm } from '@tanstack/react-form';
 import { domAnimation, LazyMotion, m } from 'framer-motion';
-import { ArrowLeft, Heart, Loader2, Minus, Package, Plus, ShoppingCart, Star } from 'lucide-react';
+import {
+  ArrowLeft,
+  Flame,
+  Heart,
+  Loader2,
+  Minus,
+  Package,
+  Plus,
+  ShoppingCart,
+  Star,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 function StarRating({ rating = 0, size = 14 }) {
@@ -60,7 +72,7 @@ function ProductImageGallery({ images, productName, selectedImage, onSelectImage
         key={selectedImage}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="relative aspect-square rounded-(--radius) overflow-hidden bg-[rgba(255,255,255,0.02)] border border-border"
+        className="relative aspect-square rounded-lg overflow-hidden bg-[rgba(255,255,255,0.02)] border border-border"
       >
         {images?.[selectedImage] ? (
           <img
@@ -106,10 +118,43 @@ function ProductInfo({
   inWishlist,
   onAddToCart,
   onToggleWishlist,
+  onBuyNow,
 }) {
   return (
     <div className="space-y-5">
-      {product.category?.name && <Badge variant="secondary">{product.category.name}</Badge>}
+      <div className="flex gap-2 flex-wrap">
+        {product.tags?.map((tag) => {
+          const tagConfig = {
+            popular: { icon: TrendingUp, color: 'bg-amber/15 text-amber border-amber/25' },
+            hot: { icon: Flame, color: 'bg-destructive/15 text-destructive border-destructive/25' },
+            'top-selling': { icon: Zap, color: 'bg-primary/15 text-primary border-primary/25' },
+            new: { icon: null, color: 'bg-success/15 text-success border-success/25' },
+          };
+          const cfg = tagConfig[tag] || {
+            icon: null,
+            color: 'bg-muted text-muted-foreground border-border',
+          };
+          const TagIcon = cfg.icon;
+          return (
+            <span
+              key={tag}
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${cfg.color}`}
+            >
+              {TagIcon && <TagIcon size={12} />}
+              {tag === 'popular'
+                ? 'Popular'
+                : tag === 'hot'
+                  ? 'Hot'
+                  : tag === 'top-selling'
+                    ? 'Top Selling'
+                    : tag === 'new'
+                      ? 'New'
+                      : tag}
+            </span>
+          );
+        })}
+        {product.category?.name && <Badge variant="secondary">{product.category.name}</Badge>}
+      </div>
 
       <h1
         className="text-2xl md:text-3xl font-bold text-(--color-foreground)"
@@ -142,13 +187,21 @@ function ProductInfo({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <span
-          className={`status-dot ${product.stock > 0 ? 'status-dot-success' : 'status-dot-danger'}`}
-        />
-        <span className="text-sm font-medium text-(--color-muted-foreground)">
-          {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+      <div className="flex items-center gap-3 text-sm text-(--color-muted-foreground)">
+        <span className="flex items-center gap-2">
+          <span
+            className={`status-dot ${product.stock > 0 ? 'status-dot-success' : 'status-dot-danger'}`}
+          />
+          <span
+            className={product.stock > 0 && product.stock <= 10 ? 'text-warning font-semibold' : ''}
+          >
+            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            {product.stock > 0 && product.stock <= 10 && ' — low'}
+          </span>
         </span>
+        {product.totalSold > 0 && (
+          <span className="text-(--color-muted-foreground)">{product.totalSold} sold</span>
+        )}
       </div>
 
       {product.stock > 0 && (
@@ -172,8 +225,11 @@ function ProductInfo({
               <Plus size={14} />
             </button>
           </div>
-          <Button className="flex-1" onClick={onAddToCart}>
+          <Button className="flex-2" onClick={onAddToCart}>
             <ShoppingCart size={16} /> Add to Cart
+          </Button>
+          <Button variant="default" className="flex-1" onClick={onBuyNow}>
+            Buy Now
           </Button>
           <Button
             variant={inWishlist ? 'destructive' : 'outline'}
@@ -190,6 +246,7 @@ function ProductInfo({
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.currentUser);
   const addToCart = useCartStore((s) => s.addToCart);
   const wishlist = useWishlistStore((s) => s.wishlist);
@@ -242,12 +299,17 @@ export default function ProductDetails() {
     toast.success(`${quantity}× ${product.name} added to cart`);
   };
 
+  const handleBuyNow = () => {
+    for (let i = 0; i < quantity; i++) addToCart(product);
+    navigate('/checkout');
+  };
+
   if (loading) {
     return (
       <div className="animate-fade-in space-y-6">
         <Skeleton className="h-5 w-32" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Skeleton className="h-80 rounded-(--radius)" />
+          <Skeleton className="h-80 rounded-lg" />
           <div className="space-y-4">
             <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-4 w-1/3" />
@@ -294,6 +356,7 @@ export default function ProductDetails() {
             reviewsCount={reviews?.totalReviews}
             inWishlist={inWishlist}
             onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
             onToggleWishlist={() => toggleWishlist(product._id, currentUser)}
           />
         </div>
