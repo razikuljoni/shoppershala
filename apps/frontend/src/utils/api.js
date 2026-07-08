@@ -199,6 +199,48 @@ export const api = {
       }),
   },
 
+  // Shops
+  shops: {
+    create: (shopData) =>
+      request('/shops', {
+        method: 'POST',
+        body: JSON.stringify(shopData),
+      }),
+    getMyShop: () => request('/shops/my'),
+    getById: (id) => request(`/shops/${id}`),
+    getAll: (page = 1, limit = 10) => request(`/shops?page=${page}&limit=${limit}`),
+    update: (id, shopData) =>
+      request(`/shops/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(shopData),
+      }),
+    delete: (id) =>
+      request(`/shops/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  // Banners
+  banners: {
+    getActive: () => request('/banners/active'),
+    getAll: (page = 1, limit = 10) => request(`/banners?page=${page}&limit=${limit}`),
+    getById: (id) => request(`/banners/${id}`),
+    create: (bannerData) =>
+      request('/banners', {
+        method: 'POST',
+        body: JSON.stringify(bannerData),
+      }),
+    update: (id, bannerData) =>
+      request(`/banners/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(bannerData),
+      }),
+    delete: (id) =>
+      request(`/banners/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
   // Analytics
   analytics: {
     getDashboard: () => request('/analytics/dashboard'),

@@ -28,6 +28,7 @@ const seed = async () => {
     await db.collection('orders').deleteMany({});
     await db.collection('reviews').deleteMany({});
     await db.collection('wishlists').deleteMany({});
+    await db.collection('banners').deleteMany({});
 
     logger.info('Creating users...');
     const adminPassword = await hashPassword('admin123');
@@ -372,6 +373,48 @@ const seed = async () => {
 
     await db.collection('orders').insertMany(orders);
     logger.info(`Inserted ${orders.length} orders.`);
+
+    logger.info('Creating banners...');
+    const banners = [
+      {
+        _id: new ObjectId(),
+        title: 'Summer Sale – Up to 50% Off',
+        subtitle: 'Grab the hottest deals on electronics, fashion & more.',
+        imageUrl: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1200&q=80',
+        link: '/catalog',
+        linkText: 'Shop Now',
+        order: 0,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        _id: new ObjectId(),
+        title: 'New Arrivals Are Here',
+        subtitle: 'Discover the latest trends and exclusive drops.',
+        imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80',
+        link: '/catalog',
+        linkText: 'Explore',
+        order: 1,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        _id: new ObjectId(),
+        title: 'Free Shipping Over $50',
+        subtitle: 'Plus easy returns within 30 days. No questions asked.',
+        imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80',
+        link: '/catalog',
+        linkText: 'Learn More',
+        order: 2,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+    await db.collection('banners').insertMany(banners);
+    logger.info(`Inserted ${banners.length} banners.`);
 
     logger.info('Database seeded successfully! 🎉');
   } catch (err) {

@@ -29,6 +29,9 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   if (req.query.categoryId) {
     filters.categoryId = req.query.categoryId;
   }
+  if (req.query.tag) {
+    filters.tags = { $in: [req.query.tag] };
+  }
 
   const { products, total } = await productService.getAllProducts(page, limit, filters);
 

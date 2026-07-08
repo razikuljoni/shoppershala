@@ -1,7 +1,15 @@
+import BannerCarousel from '@/components/BannerCarousel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCategories, useProducts } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
@@ -11,16 +19,59 @@ import { AnimatePresence, m } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
+  Flame,
   Heart,
   Package,
   Search,
   ShoppingCart,
   SlidersHorizontal,
   Star,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
+/* ------------------------------------------------------------------ */
+/* Tag display helpers */
+const TAG_COLORS = {
+  popular: 'bg-amber/15 text-amber border-amber/25',
+  hot: 'bg-destructive/15 text-destructive border-destructive/25',
+  'top-selling': 'bg-primary/15 text-primary border-primary/25',
+  new: 'bg-success/15 text-success border-success/25',
+};
+const TAG_ICONS = {
+  popular: TrendingUp,
+  hot: Flame,
+  'top-selling': Zap,
+  new: null,
+};
+const TAG_LABELS = {
+  popular: 'Popular',
+  hot: 'Hot',
+  'top-selling': 'Top Selling',
+  new: 'New',
+};
+
+function ProductTags({ tags }) {
+  if (!tags?.length) return null;
+  return (
+    <div className="flex gap-1.5 flex-wrap">
+      {tags.map((tag) => {
+        const Icon = TAG_ICONS[tag];
+        return (
+          <span
+            key={tag}
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${TAG_COLORS[tag] || 'bg-muted text-muted-foreground border-border'}`}
+          >
+            {Icon && <Icon size={10} />}
+            {TAG_LABELS[tag] || tag}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 /* ------------------------------------------------------------------ */
 function ProductCardSkeleton() {
   return (
@@ -56,11 +107,12 @@ function StarRating({ rating = 0 }) {
   );
 }
 
-function ProductCard({ product, inCart, inWishlist, onAddToCart, onToggleWishlist }) {
+function ProductCard({ product, inCart, inWishlist, onAddToCart, onToggleWishlist, onBuyNow }) {
   const discount =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round((1 - product.price / product.originalPrice) * 100)
       : null;
+  const isLowStock = product.stock > 0 && product.stock <= 10;
 
   return (
     <m.div
@@ -70,7 +122,7 @@ function ProductCard({ product, inCart, inWishlist, onAddToCart, onToggleWishlis
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="group overflow-hidden hover:border-border-hover hover:shadow-(--shadow-glow) transition-all duration-300 h-full flex flex-col">
+      <Card className="group overflow-hidden hover:border-border-hover hover:shadow-(--shadow-glow) transition-all duration-300 h-full flex flex-col py-0">
         <Link
           to={`/product/${product._id}`}
           className="relative block overflow-hidden bg-[rgba(255,255,255,0.02)] aspect-4/3"
@@ -89,15 +141,16 @@ function ProductCard({ product, inCart, inWishlist, onAddToCart, onToggleWishlis
           )}
 
           <div className="absolute top-2.5 left-2.5 flex gap-1.5 flex-wrap">
+            <ProductTags tags={product.tags} />
             {discount && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive text-white">
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
                 -{discount}%
-              </span>
+              </Badge>
             )}
             {product.stock === 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[rgba(0,0,0,0.7)] text-(--color-muted-foreground) border border-border">
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-[rgba(0,0,0,0.7)]">
                 Out of Stock
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -133,34 +186,64 @@ function ProductCard({ product, inCart, inWishlist, onAddToCart, onToggleWishlis
           {(product.rating > 0 || product.reviewCount > 0) && (
             <div className="flex items-center gap-1.5">
               <StarRating rating={product.rating || 0} />
-              <span className="text-[10px] text-(--color-muted-foreground)">
+              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
                 ({product.reviewCount || 0})
-              </span>
+              </Badge>
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-auto pt-2">
-            <div>
-              <span className="text-base font-bold text-(--color-foreground)">
-                ${product.price?.toFixed(2)}
-              </span>
-              {product.originalPrice > product.price && (
-                <span className="ml-2 text-xs text-(--color-muted-foreground) line-through">
-                  ${product.originalPrice?.toFixed(2)}
-                </span>
+          {product.stock > 0 && (
+            <div className="flex items-center gap-3 text-[10px] text-(--color-muted-foreground)">
+              {product.totalSold > 0 && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                  {product.totalSold} sold
+                </Badge>
               )}
+              <Badge
+                variant={isLowStock ? 'warning' : 'success'}
+                className="text-[10px] px-1.5 py-0 h-4"
+              >
+                {product.stock} in stock
+                {isLowStock && ' — low'}
+              </Badge>
+            </div>
+          )}
+
+          <div className="mt-auto pt-2 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-base font-bold text-(--color-foreground)">
+                  ${product.price?.toFixed(2)}
+                </span>
+                {product.originalPrice > product.price && (
+                  <span className="ml-2 text-xs text-(--color-muted-foreground) line-through">
+                    ${product.originalPrice?.toFixed(2)}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <Button
-              size="icon"
-              variant={inCart ? 'success' : 'outline'}
-              className="h-8 w-8"
-              disabled={product.stock === 0}
-              onClick={() => onAddToCart(product)}
-              title={product.stock === 0 ? 'Out of stock' : 'Add to cart'}
-            >
-              <ShoppingCart size={14} />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={inCart ? 'success' : 'default'}
+                className="flex-1 h-8"
+                disabled={product.stock === 0}
+                onClick={() => onAddToCart(product)}
+              >
+                <ShoppingCart size={13} />
+                {inCart ? 'In Cart' : 'Add to Cart'}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 h-8"
+                disabled={product.stock === 0}
+                onClick={() => onBuyNow(product)}
+              >
+                Buy Now
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -175,6 +258,7 @@ export default function Catalog({ wishlistOnly = false }) {
   const addToCart = useCartStore((s) => s.addToCart);
   const wishlist = useWishlistStore((s) => s.wishlist);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
+  const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -199,8 +283,15 @@ export default function Catalog({ wishlistOnly = false }) {
     );
   }
 
+  const handleBuyNow = (product) => {
+    addToCart(product);
+    navigate('/checkout');
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {!wishlistOnly && <BannerCarousel />}
+
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2
@@ -232,27 +323,26 @@ export default function Catalog({ wishlistOnly = false }) {
         </div>
 
         {!wishlistOnly && (
-          <div className="relative">
-            <SlidersHorizontal
-              size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-muted-foreground)"
-            />
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setPage(1);
-              }}
-              className="input-base h-10 pl-9 pr-10 appearance-none min-w-45"
-            >
-              <option value="">All Categories</option>
+          <Select
+            value={selectedCategory}
+            onValueChange={(val) => {
+              setSelectedCategory(val === 'all' ? '' : val);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="min-w-45" size="lg">
+              <SlidersHorizontal size={15} className="text-(--color-muted-foreground)" />
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
+                <SelectItem key={cat._id} value={cat._id}>
                   {cat.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </div>
+            </SelectContent>
+          </Select>
         )}
       </div>
 
@@ -288,6 +378,7 @@ export default function Catalog({ wishlistOnly = false }) {
                 inCart={!!cart[product._id]}
                 inWishlist={wishlist.includes(product._id)}
                 onAddToCart={addToCart}
+                onBuyNow={handleBuyNow}
                 onToggleWishlist={(id) => toggleWishlist(id, currentUser)}
               />
             ))}

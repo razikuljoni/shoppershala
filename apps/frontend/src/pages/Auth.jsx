@@ -2,13 +2,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useLogin, useRegister } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
 import { AnimatePresence, m } from 'framer-motion';
 import { Eye, EyeOff, Loader2, Store } from 'lucide-react';
-import { toast } from 'sonner';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function Auth({ onLogin: onLoginProp }) {
   const [mode, setMode] = useState('login');
@@ -231,16 +238,18 @@ export default function Auth({ onLogin: onLoginProp }) {
                     {(field) => (
                       <div className="space-y-1.5">
                         <Label htmlFor="role">Account Role</Label>
-                        <select
-                          id="role"
-                          name="role"
+                        <Select
                           value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          className="input-base h-10 px-3"
+                          onValueChange={(val) => field.handleChange(val)}
                         >
-                          <option value="Buyer">Buyer</option>
-                          <option value="Seller">Seller</option>
-                        </select>
+                          <SelectTrigger className="w-full" size="lg">
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Buyer">Buyer</SelectItem>
+                            <SelectItem value="Seller">Seller</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                   </form.Field>

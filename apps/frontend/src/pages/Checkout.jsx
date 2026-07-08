@@ -10,7 +10,7 @@ import useCartStore from '@/stores/cartStore';
 import { useForm } from '@tanstack/react-form';
 import { m } from 'framer-motion';
 import { ArrowLeft, CheckCircle, CreditCard, Loader2, Wallet } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function OrderSummary({ items, subtotal, balance, canAfford, loading }) {
@@ -110,6 +110,10 @@ export default function Checkout() {
   const subtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0);
   const balance = currentUser?.balance || 0;
   const canAfford = balance >= subtotal;
+
+  useEffect(() => {
+    if (items.length === 0 && !success) navigate('/cart', { replace: true });
+  }, [items.length, navigate, success]);
 
   const form = useForm({
     defaultValues: {

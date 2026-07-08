@@ -1,3 +1,9 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,8 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMyOrders, useMyReviews, useUpdateUser } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
-import { useState } from 'react';
 import { Loader2, Package, PenLine, Plus, Shield, Star, User, Wallet } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const STATUS_COLORS = {
@@ -48,19 +54,23 @@ function ProfileOrders({ loading, orders }) {
     );
   }
   return (
-    <div className="space-y-3">
+    <Accordion type="multiple" className="space-y-3">
       {orders.map((order) => (
-        <Card key={order._id} className="hover:border-border-hover transition-colors">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div>
+        <AccordionItem
+          key={order._id}
+          value={order._id}
+          className="border border-border rounded-lg overflow-hidden hover:border-border-hover transition-colors"
+        >
+          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+            <div className="flex items-center justify-between flex-wrap gap-3 w-full mr-4">
+              <div className="text-left">
                 <p className="text-sm font-bold text-(--color-foreground)">
                   Order #{order._id?.slice(-8).toUpperCase()}
                 </p>
                 <p className="text-xs text-(--color-muted-foreground) mt-0.5">
                   {order.items?.length || 0} item
-                  {order.items?.length !== 1 ? 's' : ''}. {order.shippingAddress.country},{' '}
-                  {order.shippingAddress.street} {order.shippingAddress.city}
+                  {order.items?.length !== 1 ? 's' : ''}.{' '}
+                  {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ''}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -70,33 +80,57 @@ function ProfileOrders({ loading, orders }) {
                 <Badge variant={STATUS_COLORS[order.status] || 'secondary'}>{order.status}</Badge>
               </div>
             </div>
-            {order.items?.length > 0 && (
-              <>
-                <Separator className="my-3" />
-                <div className="space-y-1">
-                  {order.items.slice(0, 3).map((item) => (
-                    <div
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pb-4">
+            <Separator className="mb-3" />
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-(--color-muted-foreground) mb-2">
+                <span>
+                  Shipping: {order.shippingAddress?.country}, {order.shippingAddress?.street}{' '}
+                  {order.shippingAddress?.city}
+                </span>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-(--color-muted-foreground) border-b border-border">
+                    <th className="text-left py-1.5 font-medium">Product</th>
+                    <th className="text-center py-1.5 font-medium">Qty</th>
+                    <th className="text-right py-1.5 font-medium">Price</th>
+                    <th className="text-right py-1.5 font-medium">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items?.map((item) => (
+                    <tr
                       key={item._id || (item.name ?? 'item') + '-' + (item.price ?? 0)}
-                      className="flex justify-between text-xs text-(--color-muted-foreground)"
+                      className="border-b border-border/50"
                     >
-                      <span className="truncate">
-                        {item?.name || 'Product'} ×{item.quantity}
-                      </span>
-                      <span>${((item.price || 0) * item.quantity).toFixed(2)}</span>
-                    </div>
+                      <td className="py-2 text-(--color-foreground) font-medium">
+                        {item?.name || 'Product'}
+                      </td>
+                      <td className="py-2 text-center text-(--color-muted-foreground)">
+                        {item.quantity}
+                      </td>
+                      <td className="py-2 text-right text-(--color-muted-foreground)">
+                        ${(item.price || 0).toFixed(2)}
+                      </td>
+                      <td className="py-2 text-right font-bold text-(--color-foreground)">
+                        ${((item.price || 0) * item.quantity).toFixed(2)}
+                      </td>
+                    </tr>
                   ))}
-                  {order.items.length > 3 && (
-                    <p className="text-xs text-(--color-muted-foreground)">
-                      +{order.items.length - 3} more
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                </tbody>
+              </table>
+              <div className="flex justify-end pt-2">
+                <span className="text-sm font-bold text-(--color-foreground)">
+                  Total: ${(order.totalAmount || 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       ))}
-    </div>
+    </Accordion>
   );
 }
 

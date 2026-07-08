@@ -50,6 +50,7 @@ export const createOrder = async (userId, orderData) => {
 
     await productModel.updateProduct(item.productId, {
       stock: product.stock - item.quantity,
+      totalSold: (product.totalSold || 0) + item.quantity,
       updatedAt: new Date(),
     });
 
