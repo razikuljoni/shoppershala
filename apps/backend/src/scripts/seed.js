@@ -12,8 +12,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  'mongodb://admin:changeme123@localhost:27017/shoppershala?authSource=admin';
+  process.env.MONGODB_URI || 'mongodb://localhost:27017/shoppershala?authSource=admin';
 
 const seed = async () => {
   try {
