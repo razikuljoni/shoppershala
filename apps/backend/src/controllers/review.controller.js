@@ -1,8 +1,18 @@
+import logger from '#utils/logger.js';
 import { asyncHandler } from '#middlewares/asyncHandler.middleware.js';
 import * as service from '#services/review.service.js';
 
 export const createReview = asyncHandler(async (req, res) => {
   const result = await service.createReview(req.user.userId, req.body);
+
+  logger.info('Review created', {
+    reviewId: result._id || result.id,
+    productId: req.body.productId,
+    rating: req.body.rating,
+    userId: req.user.userId,
+    username: req.user.username,
+  });
+
   res.status(201).json({
     message: 'Review created successfully',
     data: result,
@@ -28,11 +38,25 @@ export const getReviewById = asyncHandler(async (req, res) => {
 
 export const updateReview = asyncHandler(async (req, res) => {
   const result = await service.updateReview(req.params.id, req.user.userId, req.body);
+
+  logger.info('Review updated', {
+    reviewId: req.params.id,
+    userId: req.user.userId,
+    changes: Object.keys(req.body),
+  });
+
   res.status(200).json({ message: 'Review updated successfully', status: 'ok', data: result });
 });
 
 export const deleteReview = asyncHandler(async (req, res) => {
   await service.deleteReview(req.params.id, req.user.userId);
+
+  logger.info('Review deleted', {
+    reviewId: req.params.id,
+    userId: req.user.userId,
+    username: req.user.username,
+  });
+
   res.status(200).json({ message: 'Review deleted successfully', status: 'ok' });
 });
 

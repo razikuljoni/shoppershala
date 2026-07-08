@@ -5,6 +5,9 @@ import { toast } from 'sonner';
 import './index.css';
 import App from './App.jsx';
 
+// Default to dark mode (shadcn class strategy)
+document.documentElement.classList.add('dark');
+
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {

@@ -1,13 +1,16 @@
 import { requestId } from '#middlewares/requestId.middleware.js';
 import analyticsRoutes from '#routes/analytics.routes.js';
 import authRoutes from '#routes/auth.routes.js';
+import bannerRoutes from '#routes/banner.routes.js';
 import categoryRoutes from '#routes/category.routes.js';
 import orderRoutes from '#routes/order.routes.js';
 import productRoutes from '#routes/product.routes.js';
 import reviewRoutes from '#routes/review.routes.js';
+import shopRoutes from '#routes/shop.routes.js';
 import userRoutes from '#routes/user.routes.js';
 import wishlistRoutes from '#routes/wishlist.routes.js';
 import logger, { httpLogger } from '#utils/logger.js';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -18,13 +21,19 @@ dotenv.config();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+  }),
+);
 
 // Assign unique ID to every request (for log correlation)
 app.use(requestId);
 
 // HTTP request logging (includes requestId automatically)
-app.use(httpLogger);
+// app.use(httpLogger);
 
 // Routes
 app.get('/', (_req, res) => {
@@ -40,6 +49,10 @@ app.get('/', (_req, res) => {
 const apiV1 = express.Router();
 app.use('/api/v1', apiV1);
 
+apiV1.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Register all routes under /api/v1
 apiV1.use('/auth', authRoutes);
 apiV1.use('/users', userRoutes);
@@ -47,8 +60,10 @@ apiV1.use('/categories', categoryRoutes);
 apiV1.use('/products', productRoutes);
 apiV1.use('/orders', orderRoutes);
 apiV1.use('/reviews', reviewRoutes);
+apiV1.use('/shops', shopRoutes);
 apiV1.use('/wishlist', wishlistRoutes);
 apiV1.use('/analytics', analyticsRoutes);
+apiV1.use('/banners', bannerRoutes);
 
 // 404 Handler
 app.use((req, res) => {

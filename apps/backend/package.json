@@ -1,5 +1,5 @@
 {
-  "name": "crud-express",
+  "name": "shoppershala",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -29,6 +29,7 @@
   "packageManager": "pnpm@10.29.3",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",

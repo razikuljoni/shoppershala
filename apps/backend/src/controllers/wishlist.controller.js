@@ -1,3 +1,4 @@
+import logger from '#utils/logger.js';
 import * as service from '#services/wishlist.service.js';
 import { asyncHandler } from '#middlewares/asyncHandler.middleware.js';
 
@@ -10,16 +11,33 @@ export const getWishlist = asyncHandler(async (req, res) => {
 
 export const addToWishlist = asyncHandler(async (req, res) => {
   const wishlist = await service.addToWishlist(req.user.userId, req.body.productId);
+
+  logger.info('Wishlist item added', {
+    userId: req.user.userId,
+    username: req.user.username,
+    productId: req.body.productId,
+  });
+
   res.status(200).json({ message: 'Product added to wishlist', status: 'ok', data: wishlist });
 });
 
 export const removeFromWishlist = asyncHandler(async (req, res) => {
   const wishlist = await service.removeFromWishlist(req.user.userId, req.params.productId);
+
+  logger.info('Wishlist item removed', {
+    userId: req.user.userId,
+    username: req.user.username,
+    productId: req.params.productId,
+  });
+
   res.status(200).json({ message: 'Product removed from wishlist', status: 'ok', data: wishlist });
 });
 
 export const clearWishlist = asyncHandler(async (req, res) => {
   const result = await service.clearWishlist(req.user.userId);
+
+  logger.info('Wishlist cleared', { userId: req.user.userId, username: req.user.username });
+
   res.status(200).json({ message: result.message, status: 'ok' });
 });
 

@@ -4,8 +4,8 @@ import { z } from 'zod';
 export const registerSchema = z.object({
   name: z.string().min(3, 'Name is required'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email format'),
-  phone: z.number({ message: 'Phone number is required' }),
+  email: z.email('Email is required'),
+  phone: z.string({ message: 'Phone number is required' }),
   role: z.enum(USER_ROLES, { message: 'Invalid role' }).default(USER_TYPES.BUYER),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   balance: z.number().default(0).optional(),
@@ -20,8 +20,8 @@ export const loginSchema = z.object({
 export const createUserSchema = z.object({
   name: z.string().min(3, 'Name is required'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email format'),
-  phone: z.number({ message: 'Phone number is required' }),
+  email: z.email('Email is required'),
+  phone: z.string({ message: 'Phone number is required' }),
   role: z.enum(USER_ROLES, { message: 'Invalid role' }),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   balance: z.number().default(0).optional(),
@@ -31,8 +31,8 @@ export const createUserSchema = z.object({
 export const updateUserSchema = z.object({
   name: z.string().min(3).optional(),
   username: z.string().min(3).optional(),
-  email: z.string().email().optional(),
-  phone: z.number().optional(),
+  email: z.email('Invalid email format').optional(),
+  phone: z.string().optional(),
   password: z.string().min(6).optional(),
   balance: z.number().default(0).optional(),
   avatar: z.string().url().optional().nullable(),
@@ -56,6 +56,8 @@ export const createProductSchema = z.object({
   stock: z.number().int().nonnegative('Stock must be non-negative'),
   categoryId: z.string().min(1, 'Category ID is required'),
   images: z.array(z.string().url()).optional().nullable(),
+  tags: z.array(z.string()).optional(),
+  shopId: z.string().optional(),
 });
 
 export const updateProductSchema = z.object({
@@ -65,6 +67,8 @@ export const updateProductSchema = z.object({
   stock: z.number().int().nonnegative().optional(),
   categoryId: z.string().min(1).optional(),
   images: z.array(z.string().url()).optional().nullable(),
+  tags: z.array(z.string()).optional(),
+  shopId: z.string().optional(),
 });
 
 export const createOrderSchema = z.object({
@@ -111,4 +115,42 @@ export const updateReviewSchema = z.object({
 
 export const addToWishlistSchema = z.object({
   productId: z.string().min(1, 'Product ID is required'),
+});
+
+export const createShopSchema = z.object({
+  name: z.string().min(1, 'Shop name is required'),
+  description: z.string().optional(),
+  logo: z.string().url().optional().nullable(),
+  banner: z.string().url().optional().nullable(),
+  contactEmail: z.string().email().optional().nullable(),
+  contactPhone: z.string().optional().nullable(),
+});
+
+export const updateShopSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+  logo: z.string().url().optional().nullable(),
+  banner: z.string().url().optional().nullable(),
+  contactEmail: z.string().email().optional().nullable(),
+  contactPhone: z.string().optional().nullable(),
+});
+
+export const createBannerSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  subtitle: z.string().optional().nullable(),
+  imageUrl: z.string().url('Image URL must be a valid URL'),
+  link: z.string().optional().nullable(),
+  linkText: z.string().optional().nullable(),
+  order: z.number().int().nonnegative().default(0),
+  active: z.boolean().default(true),
+});
+
+export const updateBannerSchema = z.object({
+  title: z.string().min(1).optional(),
+  subtitle: z.string().optional().nullable(),
+  imageUrl: z.string().url().optional(),
+  link: z.string().optional().nullable(),
+  linkText: z.string().optional().nullable(),
+  order: z.number().int().nonnegative().optional(),
+  active: z.boolean().optional(),
 });

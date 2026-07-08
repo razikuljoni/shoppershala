@@ -10,7 +10,7 @@ import useCartStore from '@/stores/cartStore';
 import { useForm } from '@tanstack/react-form';
 import { m } from 'framer-motion';
 import { ArrowLeft, CheckCircle, CreditCard, Loader2, Wallet } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function OrderSummary({ items, subtotal, balance, canAfford, loading }) {
@@ -101,6 +101,7 @@ export default function Checkout() {
   const cart = useCartStore((s) => s.cart);
   const clearCart = useCartStore((s) => s.clearCart);
   const [success, setSuccess] = useState(false);
+  const [orderSummary, setOrderSummary] = useState(null);
 
   const createOrderMutation = useCreateOrder();
   const updateUserMutation = useUpdateUser({ successMessage: null });
@@ -109,6 +110,10 @@ export default function Checkout() {
   const subtotal = items.reduce((s, i) => s + i.product.price * i.quantity, 0);
   const balance = currentUser?.balance || 0;
   const canAfford = balance >= subtotal;
+
+  useEffect(() => {
+    if (items.length === 0 && !success) navigate('/cart', { replace: true });
+  }, [items.length, navigate, success]);
 
   const form = useForm({
     defaultValues: {
@@ -146,14 +151,15 @@ export default function Checkout() {
         const newBalance = balance - subtotal;
         await updateUserMutation.mutateAsync({
           id: currentUser.id,
-          userData: { balance: newBalance },
+          userData: { balance: Math.max(0, newBalance) },
         });
-        updateUser({ balance: newBalance });
+        updateUser({ balance: Math.max(0, newBalance) });
 
+        setOrderSummary({ total: subtotal, newBalance: Math.max(0, newBalance) });
         clearCart();
         setSuccess(true);
-      } catch (err) {
-        console.error('Order placement failed:', err);
+      } catch {
+        /* mutation onError handles errors */
       }
     },
   });
@@ -178,9 +184,9 @@ export default function Checkout() {
             Order Placed!
           </h2>
           <p className="text-sm text-(--color-muted-foreground) mt-2">
-            Your order for <strong>${subtotal.toFixed(2)}</strong> has been confirmed.
+            Your order for <strong>${orderSummary.total.toFixed(2)}</strong> has been confirmed.
             <br />
-            New wallet balance: <strong>${(balance - subtotal).toFixed(2)}</strong>
+            New wallet balance: <strong>${orderSummary.newBalance.toFixed(2)}</strong>
           </p>
         </div>
         <div className="flex gap-3">

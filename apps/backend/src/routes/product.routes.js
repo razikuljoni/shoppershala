@@ -7,8 +7,8 @@ import express from 'express';
 const router = express.Router();
 
 router.post('/', authenticate, validate(createProductSchema), productController.createProduct);
-router.get('/', authenticate, productController.getAllProducts);
-router.get('/:id', authenticate, productController.getProductById);
+router.get('/', productController.getAllProducts);
+router.get('/:id', productController.getProductById);
 router.patch('/:id', authenticate, validate(updateProductSchema), productController.updateProduct);
 router.delete('/:id', authenticate, productController.deleteProduct);
 

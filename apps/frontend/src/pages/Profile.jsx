@@ -1,3 +1,9 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +18,7 @@ import { useMyOrders, useMyReviews, useUpdateUser } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
 import { useForm } from '@tanstack/react-form';
 import { Loader2, Package, PenLine, Plus, Shield, Star, User, Wallet } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const STATUS_COLORS = {
@@ -47,19 +54,23 @@ function ProfileOrders({ loading, orders }) {
     );
   }
   return (
-    <div className="space-y-3">
+    <Accordion type="multiple" className="space-y-3">
       {orders.map((order) => (
-        <Card key={order._id} className="hover:border-border-hover transition-colors">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div>
+        <AccordionItem
+          key={order._id}
+          value={order._id}
+          className="border border-border rounded-lg overflow-hidden hover:border-border-hover transition-colors"
+        >
+          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+            <div className="flex items-center justify-between flex-wrap gap-3 w-full mr-4">
+              <div className="text-left">
                 <p className="text-sm font-bold text-(--color-foreground)">
                   Order #{order._id?.slice(-8).toUpperCase()}
                 </p>
                 <p className="text-xs text-(--color-muted-foreground) mt-0.5">
                   {order.items?.length || 0} item
-                  {order.items?.length !== 1 ? 's' : ''}. {order.shippingAddress.country},{' '}
-                  {order.shippingAddress.street} {order.shippingAddress.city}
+                  {order.items?.length !== 1 ? 's' : ''}.{' '}
+                  {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ''}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -69,37 +80,61 @@ function ProfileOrders({ loading, orders }) {
                 <Badge variant={STATUS_COLORS[order.status] || 'secondary'}>{order.status}</Badge>
               </div>
             </div>
-            {order.items?.length > 0 && (
-              <>
-                <Separator className="my-3" />
-                <div className="space-y-1">
-                  {order.items.slice(0, 3).map((item) => (
-                    <div
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pb-4">
+            <Separator className="mb-3" />
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-(--color-muted-foreground) mb-2">
+                <span>
+                  Shipping: {order.shippingAddress?.country}, {order.shippingAddress?.street}{' '}
+                  {order.shippingAddress?.city}
+                </span>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-(--color-muted-foreground) border-b border-border">
+                    <th className="text-left py-1.5 font-medium">Product</th>
+                    <th className="text-center py-1.5 font-medium">Qty</th>
+                    <th className="text-right py-1.5 font-medium">Price</th>
+                    <th className="text-right py-1.5 font-medium">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items?.map((item) => (
+                    <tr
                       key={item._id || (item.name ?? 'item') + '-' + (item.price ?? 0)}
-                      className="flex justify-between text-xs text-(--color-muted-foreground)"
+                      className="border-b border-border/50"
                     >
-                      <span className="truncate">
-                        {item?.name || 'Product'} ×{item.quantity}
-                      </span>
-                      <span>${((item.price || 0) * item.quantity).toFixed(2)}</span>
-                    </div>
+                      <td className="py-2 text-(--color-foreground) font-medium">
+                        {item?.name || 'Product'}
+                      </td>
+                      <td className="py-2 text-center text-(--color-muted-foreground)">
+                        {item.quantity}
+                      </td>
+                      <td className="py-2 text-right text-(--color-muted-foreground)">
+                        ${(item.price || 0).toFixed(2)}
+                      </td>
+                      <td className="py-2 text-right font-bold text-(--color-foreground)">
+                        ${((item.price || 0) * item.quantity).toFixed(2)}
+                      </td>
+                    </tr>
                   ))}
-                  {order.items.length > 3 && (
-                    <p className="text-xs text-(--color-muted-foreground)">
-                      +{order.items.length - 3} more
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                </tbody>
+              </table>
+              <div className="flex justify-end pt-2">
+                <span className="text-sm font-bold text-(--color-foreground)">
+                  Total: ${(order.totalAmount || 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       ))}
-    </div>
+    </Accordion>
   );
 }
 
-function ProfileWallet({ currentUser, totalSpent, walletForm, topping }) {
+function ProfileWallet({ currentUser, totalSpent, walletForm, topping, walletError }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <Card>
@@ -148,6 +183,11 @@ function ProfileWallet({ currentUser, totalSpent, walletForm, topping }) {
             }}
             className="space-y-4"
           >
+            {walletError && (
+              <div className="p-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-sm text-red-400">
+                {walletError}
+              </div>
+            )}
             <walletForm.Field name="amount">
               {(field) => (
                 <div className="space-y-1.5">
@@ -248,7 +288,7 @@ function ProfileReviews({ loading, reviews }) {
   );
 }
 
-function ProfileSettings({ profileForm, savingProfile }) {
+function ProfileSettings({ profileForm, savingProfile, profileError }) {
   return (
     <Card>
       <CardHeader>
@@ -266,6 +306,11 @@ function ProfileSettings({ profileForm, savingProfile }) {
           }}
           className="space-y-4 max-w-md"
         >
+          {profileError && (
+            <div className="p-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-sm text-red-400">
+              {profileError}
+            </div>
+          )}
           <profileForm.Field name="name">
             {(field) => (
               <div className="space-y-1.5">
@@ -323,6 +368,9 @@ export default function Profile() {
   const saveProfileMutation = useUpdateUser();
   const topUpMutation = useUpdateUser({ successMessage: null });
 
+  const [profileError, setProfileError] = useState(null);
+  const [walletError, setWalletError] = useState(null);
+
   const ordersLoading = myOrdersQuery.isLoading || myReviewsQuery.isLoading;
   const orders = myOrdersQuery.data?.data || [];
   const myReviews = myReviewsQuery.data?.data || [];
@@ -336,6 +384,7 @@ export default function Profile() {
       password: '',
     },
     onSubmit: async ({ value }) => {
+      setProfileError(null);
       try {
         const payload = {};
         if (value.name.trim() && value.name !== currentUser.name) payload.name = value.name.trim();
@@ -353,7 +402,8 @@ export default function Profile() {
         });
         profileForm.setFieldValue('password', '');
       } catch (err) {
-        console.error('Failed to save profile:', err);
+        const msg = err.message || 'Failed to save profile';
+        setProfileError(msg);
       }
     },
   });
@@ -361,22 +411,26 @@ export default function Profile() {
   const walletForm = useForm({
     defaultValues: { amount: '' },
     onSubmit: async ({ value }) => {
+      setWalletError(null);
       const amount = parseFloat(value.amount);
       if (!amount || amount <= 0 || isNaN(amount)) {
-        toast.error('Enter a valid amount');
+        const msg = 'Enter a valid amount';
+        setWalletError(msg);
+        toast.error(msg);
         return;
       }
       try {
-        const newBalance = (currentUser.balance || 0) + amount;
+        const newBalance = (currentUser?.balance || 0) + amount;
         await topUpMutation.mutateAsync({
-          id: currentUser.id,
+          id: currentUser?.id,
           userData: { balance: newBalance },
         });
         updateUser({ balance: newBalance });
         walletForm.reset();
         toast.success(`Wallet topped up with $${amount.toFixed(2)}!`);
       } catch (err) {
-        console.error('Top-up failed:', err);
+        const msg = err.message || 'Top-up failed';
+        setWalletError(msg);
       }
     },
   });
@@ -466,6 +520,7 @@ export default function Profile() {
             totalSpent={totalSpent}
             walletForm={walletForm}
             topping={topping}
+            walletError={walletError}
           />
         </TabsContent>
 
@@ -474,7 +529,11 @@ export default function Profile() {
         </TabsContent>
 
         <TabsContent value="settings">
-          <ProfileSettings profileForm={profileForm} savingProfile={savingProfile} />
+          <ProfileSettings
+            profileForm={profileForm}
+            savingProfile={savingProfile}
+            profileError={profileError}
+          />
         </TabsContent>
       </Tabs>
     </div>

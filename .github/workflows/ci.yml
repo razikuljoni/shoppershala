@@ -27,7 +27,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Check formatting
         run: pnpm format:check
@@ -41,7 +41,7 @@ jobs:
       - name: Test
         env:
           MONGODB_URI: mongodb://localhost:27017
-          DB_NAME: crud-express_test
+          DB_NAME: shoppershala_test
           JWT_SECRET: ci-test-secret
           NODE_ENV: test
         run: pnpm test

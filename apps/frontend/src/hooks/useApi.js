@@ -48,8 +48,7 @@ export const useLogin = () => {
 export const useRegister = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ name, username, password, role }) =>
-      api.auth.register(name, username, password, role),
+    mutationFn: (userData) => api.auth.register(userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Account created successfully!');
@@ -140,10 +139,25 @@ export const useMyOrders = (page = 1, limit = 10, options = {}) => {
   });
 };
 
+export const useOrders = (page = 1, limit = 10, status = '', options = {}) => {
+  return useQuery({
+    queryKey: ['orders', { page, limit, status }],
+    queryFn: () => api.orders.getAll(page, limit, status),
+    ...options,
+  });
+};
+
 export const useCreateOrder = () => {
   return useNotifyMutation((orderData) => api.orders.create(orderData), {
     successMessage: 'Order placed successfully!',
-    invalidateKeys: [['my-orders'], ['users'], ['analytics-dashboard']],
+    invalidateKeys: [['my-orders'], ['orders'], ['users'], ['analytics-dashboard']],
+  });
+};
+
+export const useUpdateOrder = () => {
+  return useNotifyMutation(({ id, updateData }) => api.orders.update(id, updateData), {
+    successMessage: 'Order updated',
+    invalidateKeys: [['orders'], ['my-orders'], ['analytics-dashboard']],
   });
 };
 
@@ -176,24 +190,6 @@ export const useCreateReview = (productId) => {
       invalidateKeys: [['reviews', productId], ['product', productId], ['my-reviews']],
     },
   );
-};
-
-/* ------------------------------------------------------------------
-   Wishlist Hooks
-   ------------------------------------------------------------------ */
-
-export const useAddToWishlist = () => {
-  return useNotifyMutation((productId) => api.wishlist.add(productId), {
-    successMessage: 'Added to wishlist',
-    invalidateKeys: [['wishlist']],
-  });
-};
-
-export const useRemoveFromWishlist = () => {
-  return useNotifyMutation((productId) => api.wishlist.remove(productId), {
-    successMessage: 'Removed from wishlist',
-    invalidateKeys: [['wishlist']],
-  });
 };
 
 /* ------------------------------------------------------------------
@@ -231,6 +227,41 @@ export const useDeleteUser = () => {
 };
 
 /* ------------------------------------------------------------------
+   Shops Hooks
+   ------------------------------------------------------------------ */
+
+export const useMyShop = (options = {}) => {
+  return useQuery({
+    queryKey: ['my-shop'],
+    queryFn: () => api.shops.getMyShop(),
+    ...options,
+  });
+};
+
+export const useShop = (id, options = {}) => {
+  return useQuery({
+    queryKey: ['shop', id],
+    queryFn: () => api.shops.getById(id),
+    enabled: !!id,
+    ...options,
+  });
+};
+
+export const useCreateShop = () => {
+  return useNotifyMutation((shopData) => api.shops.create(shopData), {
+    successMessage: 'Shop created!',
+    invalidateKeys: [['my-shop'], ['shops']],
+  });
+};
+
+export const useUpdateShop = () => {
+  return useNotifyMutation(({ id, shopData }) => api.shops.update(id, shopData), {
+    successMessage: 'Shop updated!',
+    invalidateKeys: [['my-shop'], ['shop'], ['shops']],
+  });
+};
+
+/* ------------------------------------------------------------------
    Analytics Hooks
    ------------------------------------------------------------------ */
 
@@ -239,5 +270,47 @@ export const useAnalyticsDashboard = (options = {}) => {
     queryKey: ['analytics-dashboard'],
     queryFn: () => api.analytics.getDashboard(),
     ...options,
+  });
+};
+
+/* ------------------------------------------------------------------
+   Banners Hooks
+   ------------------------------------------------------------------ */
+
+export const useActiveBanners = (options = {}) => {
+  return useQuery({
+    queryKey: ['active-banners'],
+    queryFn: () => api.banners.getActive(),
+    staleTime: 5 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useBanners = (page = 1, limit = 20, options = {}) => {
+  return useQuery({
+    queryKey: ['banners', { page, limit }],
+    queryFn: () => api.banners.getAll(page, limit),
+    ...options,
+  });
+};
+
+export const useCreateBanner = () => {
+  return useNotifyMutation((bannerData) => api.banners.create(bannerData), {
+    successMessage: 'Banner created!',
+    invalidateKeys: [['banners'], ['active-banners']],
+  });
+};
+
+export const useUpdateBanner = () => {
+  return useNotifyMutation(({ id, bannerData }) => api.banners.update(id, bannerData), {
+    successMessage: 'Banner updated!',
+    invalidateKeys: [['banners'], ['active-banners']],
+  });
+};
+
+export const useDeleteBanner = () => {
+  return useNotifyMutation((id) => api.banners.delete(id), {
+    successMessage: 'Banner deleted',
+    invalidateKeys: [['banners'], ['active-banners']],
   });
 };

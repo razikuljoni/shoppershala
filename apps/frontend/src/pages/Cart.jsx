@@ -20,17 +20,17 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-5 text-center animate-fade-in">
-        <div className="w-20 h-20 rounded-3xl bg-[rgba(255,255,255,0.03)] border border-[var(--color-border)] flex items-center justify-center">
-          <PackageOpen size={36} className="text-[var(--color-muted-foreground)]" />
+        <div className="w-20 h-20 rounded-3xl bg-[rgba(255,255,255,0.03)] border border-(--color-border) flex items-center justify-center">
+          <PackageOpen size={36} className="text-(--color-muted-foreground)" />
         </div>
         <div>
           <h2
-            className="text-xl font-bold text-[var(--color-foreground)]"
+            className="text-xl font-bold text-(--color-foreground)"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Your cart is empty
           </h2>
-          <p className="text-sm text-[var(--color-muted-foreground)] mt-1">
+          <p className="text-sm text-(--color-muted-foreground) mt-1">
             Start adding products to see them here.
           </p>
         </div>
@@ -48,12 +48,12 @@ export default function Cart() {
       <div className="flex items-center justify-between">
         <div>
           <h2
-            className="text-2xl font-bold text-[var(--color-foreground)]"
+            className="text-2xl font-bold text-(--color-foreground)"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Shopping Cart
           </h2>
-          <p className="text-sm text-[var(--color-muted-foreground)] mt-0.5">
+          <p className="text-sm text-(--color-muted-foreground) mt-0.5">
             {itemCount} item{itemCount !== 1 ? 's' : ''}
           </p>
         </div>
@@ -61,7 +61,7 @@ export default function Cart() {
           variant="outline"
           size="sm"
           onClick={clearCart}
-          className="text-[var(--color-destructive)] border-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.08)]"
+          className="text-(--color-destructive) border-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.08)]"
         >
           <Trash2 size={14} /> Clear All
         </Button>
@@ -76,7 +76,7 @@ export default function Cart() {
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
+                exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
                 <Card className="overflow-hidden">
@@ -84,7 +84,7 @@ export default function Cart() {
                     <div className="flex gap-4 items-start">
                       <Link
                         to={`/product/${product._id}`}
-                        className="shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-[rgba(255,255,255,0.03)] border border-[var(--color-border)] flex items-center justify-center"
+                        className="shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-[rgba(255,255,255,0.03)] border border-(--color-border) flex items-center justify-center"
                       >
                         {product.images?.[0] ? (
                           <img
@@ -93,39 +93,38 @@ export default function Cart() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <ShoppingCart
-                            size={20}
-                            className="text-[var(--color-muted-foreground)]"
-                          />
+                          <ShoppingCart size={20} className="text-(--color-muted-foreground)" />
                         )}
                       </Link>
 
                       <div className="flex-1 min-w-0">
                         <Link
                           to={`/product/${product._id}`}
-                          className="text-sm font-semibold text-[var(--color-foreground)] hover:text-[hsl(243_75%_78%)] transition-colors line-clamp-2"
+                          className="text-sm font-semibold text-(--color-foreground) hover:text-[hsl(243_75%_78%)] transition-colors line-clamp-2"
                         >
                           {product.name}
                         </Link>
-                        <p className="text-xs text-[var(--color-muted-foreground)] mt-0.5">
+                        <p className="text-xs text-(--color-muted-foreground) mt-0.5">
                           ${product.price?.toFixed(2)} each
                         </p>
 
                         <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center border border-[var(--color-border)] rounded-lg overflow-hidden">
+                          <div className="flex items-center border border-(--color-border) rounded-lg overflow-hidden">
                             <button
                               type="button"
-                              className="px-2.5 py-1.5 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
+                              aria-label="Decrease quantity"
+                              className="px-2.5 py-1.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-[rgba(255,255,255,0.04)] transition-colors"
                               onClick={() => updateCartQuantity(product._id, quantity - 1)}
                             >
                               <Minus size={12} />
                             </button>
-                            <span className="px-3 text-sm font-bold text-[var(--color-foreground)] border-x border-[var(--color-border)]">
+                            <span className="px-3 text-sm font-bold text-(--color-foreground) border-x border-(--color-border)">
                               {quantity}
                             </span>
                             <button
                               type="button"
-                              className="px-2.5 py-1.5 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
+                              aria-label="Increase quantity"
+                              className="px-2.5 py-1.5 text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-[rgba(255,255,255,0.04)] transition-colors"
                               onClick={() => updateCartQuantity(product._id, quantity + 1)}
                             >
                               <Plus size={12} />
@@ -133,12 +132,13 @@ export default function Cart() {
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <span className="font-bold text-[var(--color-foreground)]">
+                            <span className="font-bold text-(--color-foreground)">
                               ${(product.price * quantity).toFixed(2)}
                             </span>
                             <button
                               type="button"
-                              className="p-1.5 rounded-lg text-[var(--color-muted-foreground)] hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                              aria-label="Remove item"
+                              className="p-1.5 rounded-lg text-(--color-muted-foreground) hover:text-[#f87171] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
                               onClick={() => removeFromCart(product._id)}
                             >
                               <Trash2 size={14} />
@@ -155,10 +155,10 @@ export default function Cart() {
         </div>
 
         <div className="lg:col-span-1">
-          <Card className="sticky top-[84px]">
+          <Card className="sticky top-21">
             <CardContent className="p-5 space-y-4">
               <h3
-                className="font-bold text-[var(--color-foreground)]"
+                className="font-bold text-(--color-foreground)"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 Order Summary
@@ -168,7 +168,7 @@ export default function Cart() {
                 {items.map(({ product, quantity }) => (
                   <div
                     key={product._id}
-                    className="flex justify-between text-[var(--color-muted-foreground)]"
+                    className="flex justify-between text-(--color-muted-foreground)"
                   >
                     <span className="truncate mr-2">
                       {product.name} ×{quantity}
@@ -180,7 +180,7 @@ export default function Cart() {
 
               <Separator />
 
-              <div className="flex justify-between font-bold text-[var(--color-foreground)]">
+              <div className="flex justify-between font-bold text-(--color-foreground)">
                 <span>Total</span>
                 <span className="text-lg">${subtotal.toFixed(2)}</span>
               </div>

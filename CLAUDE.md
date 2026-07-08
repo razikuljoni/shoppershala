@@ -150,12 +150,12 @@ Backend (`apps/backend/.env`):
 ```
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017
-DB_NAME=crud-express
+DB_NAME=shoppershala
 JWT_SECRET=your_secret_key
 NODE_ENV=development
 LOG_RETENTION_DAYS=30
 LOG_MAX_SIZE=20m
-SERVICE_NAME=crud-express
+SERVICE_NAME=shoppershala
 ```
 
 Frontend uses `http://localhost:3000/api/v1` hardcoded in `api.js`.

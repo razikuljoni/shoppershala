@@ -9,7 +9,7 @@ Welcome to the fullstack monorepo layout for **Shoppershala**. This document lis
 The project is structured as a **pnpm workspace monorepo**:
 
 ```
-crud-express/
+shoppershala/
 ├── apps/
 │   ├── backend/               # Layered Express.js API
 │   │   ├── src/

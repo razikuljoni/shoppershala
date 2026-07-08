@@ -1,0 +1,67 @@
+# ============================================
+# Shoppershala — Development Docker Compose
+# ============================================
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   docker compose -f docker-compose.dev.yml up -d --build
+#   docker compose -f docker-compose.dev.yml down
+#
+# This overrides the production compose file with:
+#   - Volume mounts for hot reload (no rebuild needed)
+#   - Debug ports exposed
+#   - Development environment variables
+
+services:
+  # ---- MongoDB ----
+  mongodb:
+    ports:
+      - '27017:27017'
+
+  # ---- Backend API (Dev Mode) ----
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      target: deps
+    command: pnpm --filter shoppershala dev
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongodb:27017
+      DB_NAME: shoppershala
+      JWT_SECRET: dev-secret-do-not-use-in-production
+    volumes:
+      - ./apps/backend/src:/app/apps/backend/src
+      - ./apps/backend/package.json:/app/apps/backend/package.json
+      - backend_logs:/app/apps/backend/logs
+    ports:
+      - '3000:3000'
+      - '9229:9229' # Node.js debugger
+    networks:
+      - shoppershala-net
+
+  # ---- Frontend (Dev Mode) ----
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      target: deps
+    command: pnpm --filter frontend dev --host 0.0.0.0
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000/api/v1
+    volumes:
+      - ./apps/frontend/src:/app/apps/frontend/src
+      - ./apps/frontend/public:/app/apps/frontend/public
+      - ./apps/frontend/index.html:/app/apps/frontend/index.html
+      - ./apps/frontend/vite.config.js:/app/apps/frontend/vite.config.js
+    ports:
+      - '5173:5173'
+    networks:
+      - shoppershala-net
+
+volumes:
+  backend_logs:
+    driver: local
+
+networks:
+  shoppershala-net:
+    driver: bridge

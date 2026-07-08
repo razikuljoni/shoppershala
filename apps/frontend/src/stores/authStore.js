@@ -18,14 +18,10 @@ const useAuthStore = create((set) => ({
   login: async (user) => {
     set({ currentUser: user });
     try {
-      console.log('login user ==> ', user);
-
       const [userRes, wishRes] = await Promise.all([
         api.users.getById(user.id),
         api.wishlist.get(),
       ]);
-      console.log('userRes ==> ', userRes);
-
       set((state) => ({
         currentUser: {
           ...state.currentUser,
@@ -34,25 +30,16 @@ const useAuthStore = create((set) => ({
         },
       }));
       if (wishRes.data?.products) {
-        console.log('inside if');
-
         useWishlistStore.getState().setWishlist(wishRes.data.products.map((p) => p._id));
       }
-      console.log('before return');
 
       return wishRes.data?.products?.map((p) => p._id) || [];
-    } catch (e) {
-      console.error(e);
+    } catch {
       return [];
     }
   },
 
   checkAuthToken: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      set({ authLoading: false });
-      return;
-    }
     try {
       const res = await api.auth.whoami();
       const base = {
@@ -73,21 +60,25 @@ const useAuthStore = create((set) => ({
           balance: userRes.data.balance || 0,
         },
       });
-      if (wishRes.data?.products) {
-        useWishlistStore.getState().setWishlist(wishRes.data.products.map((p) => p._id));
+      const wishlistIds = wishRes.data?.products?.map((p) => p._id) || [];
+      if (wishlistIds.length > 0) {
+        useWishlistStore.getState().setWishlist(wishlistIds);
       }
+      return wishlistIds;
     } catch {
-      console.log('catch ==> ');
-
-      localStorage.removeItem('token');
       set({ currentUser: null });
+      return [];
     } finally {
       set({ authLoading: false });
     }
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
+  logout: async () => {
+    try {
+      await api.auth.logout();
+    } catch {
+      void 0;
+    }
     set({ currentUser: null });
     useWishlistStore.getState().clear();
   },

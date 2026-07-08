@@ -1,25 +1,20 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:3000/api/v1';
+// In Docker: Nginx proxies /api/* to backend, so use relative URL
+// In development: falls back to localhost:3000
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (config) => config,
+  (error) => Promise.reject(error),
 );
 
 axiosInstance.interceptors.response.use(
@@ -66,12 +61,13 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       }),
-    register: (name, username, password, role = 'buyer') =>
+    register: (userData) =>
       request('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, username, password, role }),
+        body: JSON.stringify(userData),
       }),
     whoami: () => request('/auth/whoami'),
+    logout: () => request('/auth/logout', { method: 'POST' }),
   },
 
   // Products
@@ -199,6 +195,48 @@ export const api = {
       }),
     delete: (id) =>
       request(`/users/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  // Shops
+  shops: {
+    create: (shopData) =>
+      request('/shops', {
+        method: 'POST',
+        body: JSON.stringify(shopData),
+      }),
+    getMyShop: () => request('/shops/my'),
+    getById: (id) => request(`/shops/${id}`),
+    getAll: (page = 1, limit = 10) => request(`/shops?page=${page}&limit=${limit}`),
+    update: (id, shopData) =>
+      request(`/shops/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(shopData),
+      }),
+    delete: (id) =>
+      request(`/shops/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  // Banners
+  banners: {
+    getActive: () => request('/banners/active'),
+    getAll: (page = 1, limit = 10) => request(`/banners?page=${page}&limit=${limit}`),
+    getById: (id) => request(`/banners/${id}`),
+    create: (bannerData) =>
+      request('/banners', {
+        method: 'POST',
+        body: JSON.stringify(bannerData),
+      }),
+    update: (id, bannerData) =>
+      request(`/banners/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(bannerData),
+      }),
+    delete: (id) =>
+      request(`/banners/${id}`, {
         method: 'DELETE',
       }),
   },

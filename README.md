@@ -2,7 +2,7 @@
 
 **Fullstack E-Commerce Platform** — A production-ready monorepo featuring a layered Express.js REST API and a modern React SPA with a luxury dark-themed UI.
 
-> **Backend**: [Express.js REST API →](./apps/backend/README.md)  
+> **Backend**: [Express.js REST API →](./apps/backend/README.md)
 > **Frontend**: [React SPA →](./apps/frontend/README.md)
 
 ---
@@ -127,12 +127,12 @@ Base URL: `http://localhost:3000/api/v1`
 ```env
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017
-DB_NAME=crud-express
+DB_NAME=shoppershala
 JWT_SECRET=your_secret_key
 NODE_ENV=development
 LOG_RETENTION_DAYS=30
 LOG_MAX_SIZE=20m
-SERVICE_NAME=crud-express
+SERVICE_NAME=shoppershala
 ```
 
 Copy from `.env.example`:
