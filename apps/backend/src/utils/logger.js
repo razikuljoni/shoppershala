@@ -8,7 +8,10 @@ const { combine, timestamp, printf, splat, errors } = winston.format;
 
 // ─── Config ────────────────────────────────────────────────────────────────
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
-if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+// Vercel serverless functions cannot write to /var/task, so skip file logging there.
+const ENABLE_FILE_LOGS = !process.env.VERCEL;
+
+if (ENABLE_FILE_LOGS && !fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 const ENV = process.env.NODE_ENV || 'development';
 const SERVICE = process.env.SERVICE_NAME || 'shoppershala';
@@ -192,6 +195,38 @@ const jsonFmt = printf((info) => {
 });
 
 // ─── Build logger ──────────────────────────────────────────────────────────
+const fileTransports = ENABLE_FILE_LOGS
+  ? [
+      new DailyRotateFile({
+        filename: path.join(LOG_DIR, 'combined-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD',
+        zippedArchive: true,
+        maxSize: MAX_SIZE,
+        maxFiles: 10,
+        level: 'info',
+        format: fileFmt,
+      }),
+      new DailyRotateFile({
+        filename: path.join(LOG_DIR, 'error-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD',
+        zippedArchive: true,
+        maxSize: MAX_SIZE,
+        maxFiles: 10,
+        level: 'error',
+        format: fileFmt,
+      }),
+      new DailyRotateFile({
+        filename: path.join(LOG_DIR, 'structured-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD',
+        zippedArchive: true,
+        maxSize: MAX_SIZE,
+        maxFiles: 10,
+        level: 'debug',
+        format: jsonFmt,
+      }),
+    ]
+  : [];
+
 const logger = winston.createLogger({
   level: ENV === 'production' ? 'info' : 'debug',
   levels: { error: 0, warn: 1, info: 2, http: 3, debug: 4 },
@@ -207,54 +242,32 @@ const logger = winston.createLogger({
       level: ENV === 'production' ? 'info' : 'debug',
       format: consoleFmt,
     }),
-    new DailyRotateFile({
-      filename: path.join(LOG_DIR, 'combined-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: MAX_SIZE,
-      maxFiles: 10,
-      level: 'info',
-      format: fileFmt,
-    }),
-    new DailyRotateFile({
-      filename: path.join(LOG_DIR, 'error-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: MAX_SIZE,
-      maxFiles: 10,
-      level: 'error',
-      format: fileFmt,
-    }),
-    new DailyRotateFile({
-      filename: path.join(LOG_DIR, 'structured-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: MAX_SIZE,
-      maxFiles: 10,
-      level: 'debug',
-      format: jsonFmt,
-    }),
+    ...fileTransports,
   ],
-  exceptionHandlers: [
-    new DailyRotateFile({
-      filename: path.join(LOG_DIR, 'exceptions-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: MAX_SIZE,
-      maxFiles: 10,
-      format: fileFmt,
-    }),
-  ],
-  rejectionHandlers: [
-    new DailyRotateFile({
-      filename: path.join(LOG_DIR, 'rejections-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: MAX_SIZE,
-      maxFiles: 10,
-      format: fileFmt,
-    }),
-  ],
+  exceptionHandlers: ENABLE_FILE_LOGS
+    ? [
+        new DailyRotateFile({
+          filename: path.join(LOG_DIR, 'exceptions-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: MAX_SIZE,
+          maxFiles: 10,
+          format: fileFmt,
+        }),
+      ]
+    : [],
+  rejectionHandlers: ENABLE_FILE_LOGS
+    ? [
+        new DailyRotateFile({
+          filename: path.join(LOG_DIR, 'rejections-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: MAX_SIZE,
+          maxFiles: 10,
+          format: fileFmt,
+        }),
+      ]
+    : [],
 });
 
 // ─── HTTP request logging middleware ───────────────────────────────────────
@@ -298,10 +311,12 @@ function enforceRetention() {
 if (!cleanupScheduled) {
   // eslint-disable-next-line no-useless-assignment
   cleanupScheduled = true;
-  setTimeout(() => {
-    enforceRetention();
-    setInterval(enforceRetention, 86400000);
-  }, 5000);
+  if (ENABLE_FILE_LOGS) {
+    setTimeout(() => {
+      enforceRetention();
+      setInterval(enforceRetention, 86400000);
+    }, 5000);
+  }
 }
 
 export { enforceRetention, MAX_SIZE, redact, RETENTION_DAYS };

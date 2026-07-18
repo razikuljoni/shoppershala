@@ -541,6 +541,8 @@ All log files are stored in `logs/` as clean JSON (no ANSI color codes):
 | `exceptions.log` | Uncaught exceptions          |
 | `rejections.log` | Unhandled promise rejections |
 
+> On Vercel serverless deployments, file logging is disabled because the runtime filesystem is read-only. Console logging still works, and Vercel captures those logs in its runtime log stream.
+
 ### Using the Logger
 
 ```js
@@ -631,6 +633,7 @@ Invalid requests return `400` with specific field-level error messages.
 3. Update `MONGODB_URI` to production database
 4. Remove default credentials from `.env`
 5. Use a process manager (pm2, systemd)
+6. If deploying to Vercel, rely on console logs only and expect no local `logs/` directory
 
 ### With PM2
 
