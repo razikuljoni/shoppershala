@@ -143,7 +143,12 @@ cp apps/backend/.env.example apps/backend/.env
 
 ### Frontend
 
-The API base URL is hardcoded in `src/utils/api.js`. No `.env` file is required.
+The API base URL is set via `VITE_API_BASE_URL` (defaults to `http://localhost:3000` for local dev).
+Set it in `apps/frontend/.env.local` for production:
+
+```env
+VITE_API_BASE_URL=https://shoppershala-backend.vercel.app
+```
 
 ---
 

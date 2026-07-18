@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 // In Docker: Nginx proxies /api/* to backend, so use relative URL
-// In development: falls back to localhost:3000
-const BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api/v1';
+// Set VITE_API_BASE_URL for production (e.g. https://shoppershala-backend.vercel.app)
+// Defaults to localhost:3000 for local development
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
