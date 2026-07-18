@@ -290,10 +290,16 @@ pnpm lint:fix     # Auto-fix ESLint issues
 
 ## Environment & API
 
-The API base URL is hardcoded in `src/utils/api.js`:
+The API base URL is configured via the `VITE_API_BASE_URL` environment variable in `apps/frontend/.env.local`, defaulting to `http://localhost:3000` for local development:
 
 ```javascript
-const BASE_URL = 'http://localhost:3000/api/v1';
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
+```
+
+For Vercel production, create `apps/frontend/.env.local`:
+
+```env
+VITE_API_BASE_URL=https://shoppershala-backend.vercel.app
 ```
 
 All authenticated requests automatically include the JWT token from `localStorage` via Axios request interceptor.

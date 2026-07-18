@@ -631,9 +631,10 @@ Invalid requests return `400` with specific field-level error messages.
 1. Change `JWT_SECRET` to a strong random value
 2. Set `NODE_ENV=production`
 3. Update `MONGODB_URI` to production database
-4. Remove default credentials from `.env`
-5. Use a process manager (pm2, systemd)
-6. If deploying to Vercel, rely on console logs only and expect no local `logs/` directory
+4. Set `CORS_ORIGIN` to include your frontend URL (comma-separated for multiple origins)
+5. Remove default credentials from `.env`
+6. Use a process manager (pm2, systemd)
+7. If deploying to Vercel, rely on console logs only and expect no local `logs/` directory
 
 ### With PM2
 
@@ -652,6 +653,7 @@ PORT=3000
 MONGODB_URI=mongodb://user:pass@host:port/dbname?authSource=admin
 DB_NAME=shoppershala
 JWT_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
+CORS_ORIGIN=https://shoppershala-frontend.vercel.app,http://localhost:5173
 ```
 
 ---

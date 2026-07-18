@@ -158,7 +158,7 @@ LOG_MAX_SIZE=20m
 SERVICE_NAME=shoppershala
 ```
 
-Frontend uses `http://localhost:3000/api/v1` hardcoded in `api.js`.
+Frontend uses `VITE_API_BASE_URL` env var in `api.js`, falling back to `http://localhost:3000` for local dev.
 
 ---
 
