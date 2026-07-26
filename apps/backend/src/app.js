@@ -14,10 +14,25 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import { connectDb } from '#config/db.js';
 
 const app = express();
 
 dotenv.config();
+
+// Initialize DB connection for serverless environments (Vercel functions import this file)
+// Call connectDb in a non-blocking top-level async IIFE so the connection persists across invocations.
+(async () => {
+  try {
+    if (process.env.MONGODB_URI) {
+      await connectDb(process.env.MONGODB_URI);
+    } else {
+      logger.warn('MONGODB_URI not set; skipping DB connect');
+    }
+  } catch (err) {
+    logger.error('Failed to initialize DB', { message: err.message, stack: err.stack });
+  }
+})();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
