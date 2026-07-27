@@ -21,11 +21,16 @@ export const connectDb = async (uri) => {
 };
 
 export const getDb = async () => {
+  // Lazy-connect on first call — essential for serverless (Vercel)
+  // where the top-level async IIFE may not finish before a request arrives.
   if (!dbClient) {
-    throw new Error('Database client not initialized. Call connectDb first.');
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      throw new Error('MONGODB_URI is not set');
+    }
+    await connectDb(uri);
   }
-  const db = await dbClient.db(DB_NAME);
-  return db;
+  return dbClient.db(DB_NAME);
 };
 
 export const closeDbConnection = async () => {
