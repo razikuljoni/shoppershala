@@ -1,4 +1,4 @@
-import { api } from '@/utils/api';
+import { api, setAuthToken, clearAuthToken } from '@/utils/api';
 import { create } from 'zustand';
 import useWishlistStore from './wishlistStore';
 
@@ -42,6 +42,7 @@ const useAuthStore = create((set) => ({
   checkAuthToken: async () => {
     try {
       const res = await api.auth.whoami();
+      if (res.data.token) setAuthToken(res.data.token);
       const base = {
         id: res.data.id,
         username: res.data.username,
@@ -79,6 +80,7 @@ const useAuthStore = create((set) => ({
     } catch {
       void 0;
     }
+    clearAuthToken();
     set({ currentUser: null });
     useWishlistStore.getState().clear();
   },

@@ -5,6 +5,20 @@ import axios from 'axios';
 // Defaults to localhost:3000 for local development
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000') + '/api/v1';
 
+let authToken = null;
+
+export function setAuthToken(token) {
+  authToken = token;
+}
+
+export function getAuthToken() {
+  return authToken;
+}
+
+export function clearAuthToken() {
+  authToken = null;
+}
+
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -14,7 +28,12 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    if (authToken) {
+      config.headers.Authorization = `Bearer ${authToken}`;
+    }
+    return config;
+  },
   (error) => Promise.reject(error),
 );
 

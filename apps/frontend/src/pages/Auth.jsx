@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { useLogin, useRegister } from '@/hooks/useApi';
 import useAuthStore from '@/stores/authStore';
+import { setAuthToken } from '@/utils/api';
 import { useForm } from '@tanstack/react-form';
 import { AnimatePresence, m } from 'framer-motion';
 import { Eye, EyeOff, Loader2, Store } from 'lucide-react';
@@ -41,14 +42,16 @@ export default function Auth({ onLogin: onLoginProp }) {
             username: value.username,
             password: value.password,
           });
-          const { user } = res.data;
+          const { user, token } = res.data;
+          if (token) setAuthToken(token);
           const userData = { ...user };
           await login(userData);
           onLoginProp?.(userData);
         } else {
           if (!value.name.trim()) return;
           const res = await registerMutation.mutateAsync(value);
-          const { user: regUser } = res.data;
+          const { user: regUser, token } = res.data;
+          if (token) setAuthToken(token);
           await login(regUser);
           onLoginProp?.(regUser);
         }
