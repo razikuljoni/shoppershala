@@ -81,6 +81,8 @@ const useAuthStore = create((set) => ({
       void 0;
     }
     clearAuthToken();
+    localStorage.clear();
+    sessionStorage.clear();
     set({ currentUser: null });
     useWishlistStore.getState().clear();
   },

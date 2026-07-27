@@ -62,7 +62,14 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (_req, res) => {
-  res.clearCookie('token', { path: '/' });
+  // Must match the same options used when setting the cookie,
+  // otherwise the browser will NOT delete it.
+  res.clearCookie('token', {
+    path: '/',
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  });
   res.json({ message: 'Logged out', status: 'ok' });
 });
 
