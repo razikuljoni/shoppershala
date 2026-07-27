@@ -1,12 +1,16 @@
 import { asyncHandler } from '#middlewares/asyncHandler.middleware.js';
 import * as authService from '#services/auth.service.js';
-import { verifyToken } from '#utils/jwt.util.js';
+import { generateToken, verifyToken } from '#utils/jwt.util.js';
 import logger from '#utils/logger.js';
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: isProduction,
+  // 'none' is required for cross-origin XHR/fetch to include the cookie.
+  // 'lax' only sends cookies on top-level navigations, not on API calls.
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge: 24 * 60 * 60 * 1000,
   path: '/',
 };
@@ -25,7 +29,7 @@ export const register = asyncHandler(async (req, res) => {
   res.status(201).json({
     message: 'User registered successfully',
     status: 'ok',
-    data: { user: result.user },
+    data: { user: result.user, token: result.token },
   });
 });
 
@@ -53,7 +57,7 @@ export const login = asyncHandler(async (req, res) => {
   res.json({
     message: 'Login successful',
     status: 'ok',
-    data: { user: result.user },
+    data: { user: result.user, token: result.token },
   });
 });
 
@@ -70,6 +74,16 @@ export const whoAmI = asyncHandler(async (req, res) => {
 
   const decoded = verifyToken(token);
 
+  const freshToken = generateToken({
+    userId: decoded.userId,
+    name: decoded.name,
+    username: decoded.username,
+    role: decoded.role,
+    balance: decoded.balance,
+  });
+
+  res.cookie('token', freshToken, COOKIE_OPTIONS);
+
   logger.debug('Token decoded', {
     userId: decoded.userId,
     username: decoded.username,
@@ -79,6 +93,11 @@ export const whoAmI = asyncHandler(async (req, res) => {
   res.json({
     message: 'Authenticated user',
     status: 'ok',
-    data: { id: decoded.userId, username: decoded.username, role: decoded.role },
+    data: {
+      id: decoded.userId,
+      username: decoded.username,
+      role: decoded.role,
+      token: freshToken,
+    },
   });
 });
